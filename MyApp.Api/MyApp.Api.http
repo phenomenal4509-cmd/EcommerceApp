@@ -1,0 +1,5 @@
+@MyApp.Api_HostAddress = http://localhost:5296
+
+Accept: application/json
+    
+###

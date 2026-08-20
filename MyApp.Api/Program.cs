@@ -1,3 +1,5 @@
+using MyApp.Api.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();

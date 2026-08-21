@@ -6,52 +6,51 @@ public static class ProductEndPoints
 {
     public static void MapEndpoints(this WebApplication app)
     {
-        app.MapGet("/product", () =>
+        app.MapGet("/product", (AppDbContex dbContext) =>
         {
-            return SeedData.Products ;
+            return dbContext.Products.ToList() ;
         });
-        app.MapPost("/product", (CreateProductDto product) =>
+        app.MapPost("/product", (CreateProductDto newProduct,AppDbContex dbContext) =>
         {
-            int Id = SeedData.Products.Count+1;
-            Product newProduct = new()
+            Product product = new()
             {
-                Id = Id,
-                Name = product.Name,
-                Price = product.Price,
-                Description = product.Description
-            };
-            SeedData.Products.Add(newProduct);
-            return Results.Created($"/prducts/{Id}",newProduct);
-        });
-        app.MapPut("/product/{id}", (int id ,UpdateProductDto product) =>
-        {
-            var index = SeedData.Products.FindIndex(p => p.Id == id);
+                Name=newProduct.Name,
+                Price=newProduct.Price,
+                Description=newProduct.Description
 
-            if (index == -1)
+            };
+            
+            dbContext.Products.Add(product);
+            dbContext.SaveChanges();
+            ProductDetailsDto productDetails= new (product.Id,product.Name,product.Price,product.Description);
+            
+            return Results.Created($"/product/{product.Id}",productDetails);
+        });
+        app.MapPut("/product/{id}", (int id ,UpdateProductDto product,AppDbContex dbContext) =>
+        {
+            var exisitingGame = dbContext.Products.Find(id);
+
+            if (exisitingGame is null)
             {
                 return Results.NotFound();
             }
-
-            SeedData.Products[index] = new Product
-            {
-                Id = id,
-                Name = product.Name,
-                Price = product.Price,
-                Description = product.Description
-            };
+            exisitingGame.Name=product.Name;
+            exisitingGame.Price=product.Price;
+            exisitingGame.Description=product.Description;
+            dbContext.SaveChanges();
             return Results.NoContent();
         });
-        app.MapDelete("/product/{id}",(int id) =>
+        app.MapDelete("/product/{id}",(int id,AppDbContex dbContext) =>
         {
-            var index = SeedData.Products.FindIndex(p => p.Id == id);
-
-            if (index == -1)
+            var exisitingGame = dbContext.Products.Find(id);
+            if (exisitingGame is null)
             {
                 return Results.NotFound();
             }
-            SeedData.Products.RemoveAt(index);
-            return Results.NoContent();
+            dbContext.Products.Remove(exisitingGame);
+            dbContext.SaveChanges();   
+            return Results.NoContent();         
         });
-        
+
     }
 }

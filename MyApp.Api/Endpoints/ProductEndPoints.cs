@@ -10,6 +10,17 @@ public static class ProductEndPoints
         {
             return dbContext.Products.ToList() ;
         });
+        app.MapGet("/product{id}",(int id ,AppDbContex dbContext) =>
+        {
+            var exisitingGame = dbContext.Products.Find(id);
+
+            if (exisitingGame is null)
+            {
+                return Results.NotFound();
+            }
+            ProductDto product= new(exisitingGame.Name,exisitingGame.Price,exisitingGame.Description);
+            return Results.Ok(product);
+        });
         app.MapPost("/product", (CreateProductDto newProduct,AppDbContex dbContext) =>
         {
             Product product = new()

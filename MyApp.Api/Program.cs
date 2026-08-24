@@ -6,6 +6,5 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddAppStoreDb();
 var app = builder.Build();
 app.MigrateDb();
-app.MapEndpoints();
-app.MapOrderEndPoints();
+app.MapAllEndpoints();
 app.Run();

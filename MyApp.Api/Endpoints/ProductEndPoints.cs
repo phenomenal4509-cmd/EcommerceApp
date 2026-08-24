@@ -4,13 +4,13 @@ using MyApp.Api.Dto;
 namespace MyApp.Api.EndPoints;
 public static class ProductEndPoints
 {
-    public static void MapEndpoints(this WebApplication app)
+    public static void MapProductEndpoints(this WebApplication app)
     {
         app.MapGet("/product", (AppDbContex dbContext) =>
         {
             return dbContext.Products.ToList() ;
         });
-        app.MapGet("/product{id}",(int id ,AppDbContex dbContext) =>
+        app.MapGet("/product/{id}",(int id ,AppDbContex dbContext) =>
         {
             var exisitingGame = dbContext.Products.Find(id);
 

@@ -22,6 +22,43 @@ namespace MyApp.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MyApp.Api.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Cart");
+                });
+
+            modelBuilder.Entity("MyApp.Api.Models.CartItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.ToTable("CartItem");
+                });
+
             modelBuilder.Entity("MyApp.Api.Models.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -92,6 +129,15 @@ namespace MyApp.Api.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("MyApp.Api.Models.CartItem", b =>
+                {
+                    b.HasOne("MyApp.Api.Models.Cart", null)
+                        .WithMany("items")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MyApp.Api.Models.OrderItem", b =>
                 {
                     b.HasOne("MyApp.Api.Models.Order", null)
@@ -99,6 +145,11 @@ namespace MyApp.Api.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MyApp.Api.Models.Cart", b =>
+                {
+                    b.Navigation("items");
                 });
 
             modelBuilder.Entity("MyApp.Api.Models.Order", b =>

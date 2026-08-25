@@ -7,5 +7,6 @@ public static class EndPointExtensions
         app.MapProductEndpoints();
         app.MapOrderEndPoints();
         app.MapCartEndPoints();
+        app.MapTrackingEndPoints();
     }
 }

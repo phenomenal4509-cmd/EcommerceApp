@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
-using MyApp.Api.Models;
-
 namespace MyApp.Api.Dto;
-public record OrderDetailsDto
-(   
-    [Required]int Id,
-    [Required]decimal TotalCost,
-    [Required]DateOnly OrderDate,
-    ICollection<OrderItemDetailsDto> items
+public record OrderDetailsDto(
+    int Id,
+    decimal TotalCost,
+    DateOnly OrderDate,
+    string CurrentStatus,
+    ICollection<OrderItemDetailsDto> Items,
+    ICollection<TrackingHistoryDto> TrackingHistory
 );

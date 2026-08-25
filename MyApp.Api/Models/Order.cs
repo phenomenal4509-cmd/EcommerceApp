@@ -5,4 +5,6 @@ public class Order
     public decimal TotalCost{get;set;}
     public ICollection<OrderItem> OrderItems{get; set;}=new List<OrderItem>();
     public DateOnly OrderDate{get;set;}
+    public required string CurrentStatus{get;set;}
+    public ICollection<Tracking> TrackingHistory { get; set; } = new List<Tracking>();
 }

@@ -9,38 +9,45 @@ public static class OrderEndPoints
 {
     public static void MapOrderEndPoints(this WebApplication app)
     {
+
         app.MapGet("/order/{id}", (int id, AppDbContex DbContext) =>
         {
-            var order = DbContext.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id);
-            if(order is null)
+            var order = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.Id == id);
+
+            if (order is null)
             {
                 return Results.NotFound("No Order with this Id exists");
             }
-            var itemDetails = order.OrderItems.Select(item =>
-            new OrderItemDetailsDto(
-            item.ProductId,
-            item.Quantity,
-            item.UnitPrice
-            )
-            ).ToList();
+
+            var itemDetails = order.OrderItems
+                .Select(item => new OrderItemDetailsDto(item.ProductId, item.Quantity, item.UnitPrice))
+                .ToList();
+
+            var trackingHistory = order.TrackingHistory
+                .Select(t => new TrackingHistoryDto(t.Status, t.StatusChangedAt))
+                .ToList();
+
             OrderDetailsDto orderDetails = new(
-            order.Id,
-            order.TotalCost,
-            order.OrderDate,
-            itemDetails
-        );
+                order.Id,
+                order.TotalCost,
+                order.OrderDate,
+                order.CurrentStatus,
+                itemDetails,
+                trackingHistory
+            );
+
             return Results.Ok(orderDetails);
         });
-
         app.MapPost("/order", (CreateOrderDto newOrder, AppDbContex DbContext) =>
         {
             decimal totalCost = 0;
-            
+            string status="Pending";
             Order order = new()
             {
-                OrderDate = DateOnly.FromDateTime(DateTime.Now)
+                OrderDate = DateOnly.FromDateTime(DateTime.Now),
+                CurrentStatus = status
             };
-            
+
             foreach (var item in newOrder.items)
             {
                 var existingProduct = DbContext.Products.Find(item.ProductId);
@@ -51,7 +58,6 @@ public static class OrderEndPoints
                 }
 
                 decimal cost = existingProduct.Price * item.Quantity;
-
                 totalCost += cost;
 
                 OrderItem orderItem = new()
@@ -62,37 +68,56 @@ public static class OrderEndPoints
                 };
 
                 order.OrderItems.Add(orderItem);
+                
             }
-
             order.TotalCost = totalCost;
-
             DbContext.Orders.Add(order);
-            DbContext.SaveChanges();
-            var itemDetails = order.OrderItems.Select(item =>
-            new OrderItemDetailsDto(
-            item.ProductId,
-            item.Quantity,
-            item.UnitPrice
-            )
-            ).ToList();
+            DbContext.SaveChanges(); // Step 1: Insert Order + OrderItems → order.Id is now the real DB Id
+
+            Tracking tracking = new()
+            {
+                OrderId = order.Id, // Now safe — order.Id has the real DB-generated value
+                Status = status,
+                StatusChangedAt = DateTimeOffset.UtcNow
+            };
+            DbContext.Tracking.Add(tracking);
+            DbContext.SaveChanges(); // Step 2: Insert Tracking with the correct OrderId
+
+            var itemDetails = order.OrderItems
+                .Select(item => new OrderItemDetailsDto(item.ProductId, item.Quantity, item.UnitPrice))
+                .ToList();
+
+            var trackingHistory = new List<TrackingHistoryDto>
+            {
+                new TrackingHistoryDto(tracking.Status, tracking.StatusChangedAt)
+            };
+
             OrderDetailsDto orderDetails = new(
-            order.Id,
-            order.TotalCost,
-            order.OrderDate,
-            itemDetails
-        );
+                order.Id,
+                order.TotalCost,
+                order.OrderDate,
+                order.CurrentStatus,
+                itemDetails,
+                trackingHistory
+            );
 
             return Results.Created($"/order/{order.Id}", orderDetails);
         });
-        app.MapPut("/order/{id}", (int id , AppDbContex DbContext,UpdateOrderDto updateOrder) =>
+
+
+        app.MapPut("/order/{id}", (int id, AppDbContex DbContext, UpdateOrderDto updateOrder) =>
         {
-            var existingOrder = DbContext.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id);
-            if(existingOrder is null)
+            var existingOrder = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.Id == id);
+
+            if (existingOrder is null)
             {
                 return Results.NotFound("No such Order exists");
             }
+
             DbContext.OrderItems.RemoveRange(existingOrder.OrderItems);
-            decimal totalCost=0;
+
+            decimal totalCost = 0;
+
             foreach (var item in updateOrder.items)
             {
                 var existingProduct = DbContext.Products.Find(item.productId);
@@ -103,7 +128,6 @@ public static class OrderEndPoints
                 }
 
                 decimal cost = existingProduct.Price * item.Quantity;
-
                 totalCost += cost;
 
                 OrderItem orderItem = new()
@@ -115,34 +139,45 @@ public static class OrderEndPoints
 
                 existingOrder.OrderItems.Add(orderItem);
             }
-            existingOrder.TotalCost=totalCost;
+
+            existingOrder.TotalCost = totalCost;
+
             DbContext.SaveChanges();
-            var itemDetails = existingOrder.OrderItems.Select(item =>
-            new OrderItemDetailsDto(
-            item.ProductId,
-            item.Quantity,
-            item.UnitPrice
-            )
-            ).ToList();
+
+            var itemDetails = existingOrder.OrderItems
+                .Select(item => new OrderItemDetailsDto(item.ProductId, item.Quantity, item.UnitPrice))
+                .ToList();
+
+            var trackingHistory = existingOrder.TrackingHistory
+                .Select(t => new TrackingHistoryDto(t.Status, t.StatusChangedAt))
+                .ToList();
+
             OrderDetailsDto orderDetails = new(
-            existingOrder.Id,
-            existingOrder.TotalCost,
-            existingOrder.OrderDate,
-            itemDetails
-        );
-        return Results.Ok(orderDetails);
+                existingOrder.Id,
+                existingOrder.TotalCost,
+                existingOrder.OrderDate,
+                existingOrder.CurrentStatus,
+                itemDetails,
+                trackingHistory
+            );
+
+            return Results.Ok(orderDetails);
         });
-        app.MapDelete("/order/{id}",(int id,AppDbContex DbContext) =>
+
+
+        app.MapDelete("/order/{id}", (int id, AppDbContex dbContext) =>
         {
-            var existingOrder= DbContext.Orders.FirstOrDefault(o=>o.Id==id);
-            if(existingOrder is null)
+            var existingOrder = dbContext.Orders.FirstOrDefault(o => o.Id == id);
+
+            if (existingOrder is null)
             {
                 return Results.NotFound("No such Order exists");
             }
-            DbContext.Orders.Remove(existingOrder);
-            DbContext.SaveChanges();
+
+            dbContext.Orders.Remove(existingOrder);
+            dbContext.SaveChanges();
+
             return Results.NoContent();
         });
-
     }
 }

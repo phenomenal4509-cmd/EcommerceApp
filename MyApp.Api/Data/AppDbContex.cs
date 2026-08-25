@@ -11,6 +11,7 @@ public class AppDbContex(DbContextOptions<AppDbContex> options) :DbContext(optio
    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
    public DbSet<Cart> Cart=>Set<Cart>();
    public DbSet<CartItem> CartItem=>Set<CartItem>();
+   public DbSet<Tracking> Tracking => Set<Tracking>();
    protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
     modelBuilder.Entity<OrderItem>()
@@ -18,6 +19,11 @@ public class AppDbContex(DbContextOptions<AppDbContex> options) :DbContext(optio
         .WithMany(o => o.OrderItems)
         .HasForeignKey(oi => oi.OrderId)
         .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Tracking>()
+        .HasOne<Order>()
+        .WithMany(o => o.TrackingHistory)
+        .HasForeignKey(t => t.OrderId)
+        .OnDelete(DeleteBehavior.Cascade);
 }
 }
- 

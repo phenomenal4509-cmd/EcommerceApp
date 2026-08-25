@@ -67,6 +67,10 @@ namespace MyApp.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CurrentStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateOnly>("OrderDate")
                         .HasColumnType("date");
 
@@ -129,10 +133,35 @@ namespace MyApp.Api.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("MyApp.Api.Models.Tracking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("StatusChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Tracking");
+                });
+
             modelBuilder.Entity("MyApp.Api.Models.CartItem", b =>
                 {
                     b.HasOne("MyApp.Api.Models.Cart", null)
-                        .WithMany("items")
+                        .WithMany("CartItems")
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -147,14 +176,25 @@ namespace MyApp.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MyApp.Api.Models.Tracking", b =>
+                {
+                    b.HasOne("MyApp.Api.Models.Order", null)
+                        .WithMany("TrackingHistory")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MyApp.Api.Models.Cart", b =>
                 {
-                    b.Navigation("items");
+                    b.Navigation("CartItems");
                 });
 
             modelBuilder.Entity("MyApp.Api.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
+
+                    b.Navigation("TrackingHistory");
                 });
 #pragma warning restore 612, 618
         }

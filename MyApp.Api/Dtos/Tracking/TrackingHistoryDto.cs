@@ -1,0 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace MyApp.Api.Dto;
+
+public record TrackingHistoryDto(
+    [Required]string Status ,
+    [Required]DateTimeOffset StatusChangedAt
+);

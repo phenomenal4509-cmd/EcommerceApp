@@ -76,12 +76,12 @@ public static class OrderEndPoints
 
             Tracking tracking = new()
             {
-                OrderId = order.Id, // Now safe — order.Id has the real DB-generated value
+                OrderId = order.Id, 
                 Status = status,
                 StatusChangedAt = DateTimeOffset.UtcNow
             };
             DbContext.Tracking.Add(tracking);
-            DbContext.SaveChanges(); // Step 2: Insert Tracking with the correct OrderId
+            DbContext.SaveChanges(); 
 
             var itemDetails = order.OrderItems
                 .Select(item => new OrderItemDetailsDto(item.ProductId, item.Quantity, item.UnitPrice))

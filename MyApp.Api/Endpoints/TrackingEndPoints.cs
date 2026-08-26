@@ -9,7 +9,7 @@ public static class TrackingEndPoints
 {
     public static void MapTrackingEndPoints(this WebApplication app)
     {
-        app.MapGet("/orders/{id}/tracking",(int id,AppDbContex dbContext) =>
+        app.MapGet("/order/{id}/tracking",(int id,AppDbContex dbContext) =>
         {
             var order=dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefault(o=>o.Id==id);
             if(order is null)
@@ -29,7 +29,7 @@ public static class TrackingEndPoints
 
             return Results.Ok(sendHistory);
         });
-        app.MapPut("/orders/{id}/tracking", (int id , AppDbContex dbContext,UpdateTrackingDto updateTracking) =>
+        app.MapPut("/order/{id}/tracking", (int id , AppDbContex dbContext,UpdateTrackingDto updateTracking) =>
         {
             var order=dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefault(o=>o.Id==id);
             if(order is null)
@@ -40,9 +40,10 @@ public static class TrackingEndPoints
             {
                 OrderId=order.Id,
                 Status=updateTracking.Status,
-                StatusChangedAt=DateTimeOffset.Now
+                StatusChangedAt=DateTimeOffset.UtcNow
             };
-            order.TrackingHistory.Add(newTrack);
+            order.CurrentStatus = updateTracking.Status;
+            dbContext.Tracking.Add(newTrack);  
             dbContext.SaveChanges();
             ICollection<TrackingHistoryDto>trackingHistory=new List<TrackingHistoryDto>();
             foreach(var element in order.TrackingHistory)

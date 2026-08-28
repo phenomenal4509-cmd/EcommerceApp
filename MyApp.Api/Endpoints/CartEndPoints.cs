@@ -47,6 +47,10 @@ public static class CartEndPoints
         app.MapGet("/cart", (AppDbContex dbContext,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.Unauthorized();
+                }
             var existingCart = dbContext.Cart
                 .Include(c => c.CartItems)
                 .FirstOrDefault(c => c.UserID == userId);
@@ -69,6 +73,10 @@ public static class CartEndPoints
         app.MapPost("/cart", (CreateCartDto cart, AppDbContex dbContext,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.Unauthorized();
+                }
             Cart newCart = new();
             newCart.UserID=userId;
             foreach (var item in cart.items)
@@ -105,6 +113,10 @@ public static class CartEndPoints
         app.MapPut("/cart",(UpdateCartDto update, HttpContext context, AppDbContex dbContext) =>
             {
                 var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.Unauthorized();
+                }
                 var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.UserID == userId);
 
                 if (existingCart is null)
@@ -149,6 +161,10 @@ public static class CartEndPoints
         app.MapDelete("/cart", (HttpContext context, AppDbContex dbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.Unauthorized();
+                }
             var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.UserID == userId);
             if (existingCart is null)
             {
@@ -160,6 +176,6 @@ public static class CartEndPoints
             dbContext.SaveChanges();
 
             return Results.NoContent();
-        });
+        }).RequireAuthorization();
     }
 }

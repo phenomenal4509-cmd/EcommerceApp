@@ -277,6 +277,10 @@ namespace MyApp.Api.Migrations
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Orders");

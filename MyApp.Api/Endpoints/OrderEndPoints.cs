@@ -2,6 +2,7 @@ using MyApp.Api.Data;
 using MyApp.Api.Models;
 using MyApp.Api.Dto;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MyApp.Api.EndPoints;
 
@@ -10,10 +11,14 @@ public static class OrderEndPoints
     public static void MapOrderEndPoints(this WebApplication app)
     {
 
-        app.MapGet("/order/{id}", (int id, AppDbContex DbContext) =>
+        app.MapGet("/order", (HttpContext context, AppDbContex DbContext) =>
         {
-            var order = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.Id == id);
-
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.Unauthorized();
+                }
+            var order = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.UserId==userId);
             if (order is null)
             {
                 return Results.NotFound("No Order with this Id exists");
@@ -37,13 +42,19 @@ public static class OrderEndPoints
             );
 
             return Results.Ok(orderDetails);
-        });
-        app.MapPost("/order", (CreateOrderDto newOrder, AppDbContex DbContext) =>
+        }).RequireAuthorization();
+        app.MapPost("/order", (CreateOrderDto newOrder, AppDbContex DbContext,HttpContext context) =>
         {
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(string.IsNullOrEmpty(userId))
+            {
+                return Results.Unauthorized();
+            }
             decimal totalCost = 0;
             string status="Pending";
             Order order = new()
             {
+                UserId=userId,
                 OrderDate = DateOnly.FromDateTime(DateTime.Now),
                 CurrentStatus = status
             };
@@ -102,12 +113,17 @@ public static class OrderEndPoints
             );
 
             return Results.Created($"/order/{order.Id}", orderDetails);
-        });
+        }).RequireAuthorization();
 
 
-        app.MapPut("/order/{id}", (int id, AppDbContex DbContext, UpdateOrderDto updateOrder) =>
+        app.MapPut("/order", ( AppDbContex DbContext, UpdateOrderDto updateOrder,HttpContext context) =>
         {
-            var existingOrder = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.Id == id);
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.Unauthorized();
+                }
+            var existingOrder = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.UserId==userId);
 
             if (existingOrder is null)
             {
@@ -162,12 +178,13 @@ public static class OrderEndPoints
             );
 
             return Results.Ok(orderDetails);
-        });
+        }).RequireAuthorization();
 
 
-        app.MapDelete("/order/{id}", (int id, AppDbContex dbContext) =>
+        app.MapDelete("/order", (HttpContext context, AppDbContex dbContext) =>
         {
-            var existingOrder = dbContext.Orders.FirstOrDefault(o => o.Id == id);
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingOrder = dbContext.Orders.FirstOrDefault(o => o.UserId == userId);
 
             if (existingOrder is null)
             {
@@ -178,6 +195,6 @@ public static class OrderEndPoints
             dbContext.SaveChanges();
 
             return Results.NoContent();
-        });
+        }).RequireAuthorization();
     }
 }

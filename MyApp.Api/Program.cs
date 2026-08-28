@@ -1,10 +1,20 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.EndPoints;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.AddAppStoreDb();
+builder.AddIdentityContext();
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+app.MapIdentityApi<IdentityUser>();
+
 app.MigrateDb();
 app.MapAllEndpoints();
+
 app.Run();

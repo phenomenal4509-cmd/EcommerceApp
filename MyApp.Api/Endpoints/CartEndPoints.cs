@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.Dto;
@@ -43,11 +44,12 @@ public static class CartEndPoints
 
     public static void MapCartEndPoints(this WebApplication app)
     {
-        app.MapGet("/cart/{id}", (int id, AppDbContex dbContext) =>
+        app.MapGet("/cart", (AppDbContex dbContext,HttpContext context) =>
         {
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingCart = dbContext.Cart
                 .Include(c => c.CartItems)
-                .FirstOrDefault(c => c.Id == id);
+                .FirstOrDefault(c => c.UserID == userId);
 
             if (existingCart is null)
             {
@@ -62,12 +64,13 @@ public static class CartEndPoints
             }
 
             return Results.Ok(cartDetails);
-        });
+        }).RequireAuthorization();
 
-        app.MapPost("/cart", (CreateCartDto cart, AppDbContex dbContext) =>
+        app.MapPost("/cart", (CreateCartDto cart, AppDbContex dbContext,HttpContext context) =>
         {
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             Cart newCart = new();
-
+            newCart.UserID=userId;
             foreach (var item in cart.items)
             {
                 var product = dbContext.Products.FirstOrDefault(p => p.Id == item.ProductId);
@@ -97,11 +100,12 @@ public static class CartEndPoints
             }
 
             return Results.Created($"/cart/{newCart.Id}", cartDetails);
-        });
+        }).RequireAuthorization();
 
-        app.MapPut("/cart/{id}",(UpdateCartDto update, int id, AppDbContex dbContext) =>
+        app.MapPut("/cart",(UpdateCartDto update, HttpContext context, AppDbContex dbContext) =>
             {
-                var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.Id == id);
+                var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.UserID == userId);
 
                 if (existingCart is null)
                 {
@@ -140,11 +144,12 @@ public static class CartEndPoints
                 }
 
                 return Results.Ok(cartDetails);
-            });
+            }).RequireAuthorization();
 
-        app.MapDelete("/cart/{id}", (int id, AppDbContex dbContext) =>
+        app.MapDelete("/cart", (HttpContext context, AppDbContex dbContext) =>
         {
-            var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.Id == id);
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.UserID == userId);
             if (existingCart is null)
             {
                 return Results.NotFound("No such cart exists");

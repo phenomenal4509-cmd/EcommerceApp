@@ -1,6 +1,8 @@
     using MyApp.Api.Models;
     using Microsoft.EntityFrameworkCore;
     namespace MyApp.Api.Data;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
     public static class DataExtensions
     {
@@ -38,5 +40,12 @@
                     await context.SaveChangesAsync(cancellationToken);
             }));
             
+        }
+        public static void AddIdentityContext(this WebApplicationBuilder builder){
+        builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
+        {
+            options.Password.RequiredLength=8;
+            options.User.RequireUniqueEmail=true;
+        }).AddEntityFrameworkStores<AppDbContex>();
         }
     }

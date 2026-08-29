@@ -16,29 +16,36 @@
         {
             var connectionString =builder.Configuration.GetConnectionString("Ecommerce");
 
-            builder.Services.AddDbContext<AppDbContex>(options => options.UseNpgsql(connectionString).UseSeeding((context, _)=>{
-
-                foreach(var seedProduct in SeedData.Products)
+            builder.Services.AddDbContext<AppDbContex>(options => options.UseNpgsql(connectionString).UseSeeding((context, _) =>
+        {
+            foreach(var seedProduct in SeedData.Products)
+            {
+               var product = context.Set<Product>().FirstOrDefault(p => p.Id == seedProduct.Id);
+               if(product is null)
                 {
-                   var product=context.Set<Product>().FirstOrDefault(p=>p.Id==seedProduct.Id);
-                   if(product is null)
-                    {
-                        context.Set<Product>().Add(seedProduct);
-                    }
+                    context.Set<Product>().Add(seedProduct);
                 }
-                    context.SaveChanges();
+            }
+            context.SaveChanges();
 
-            }).UseAsyncSeeding(async(context, _,cancellationToken)=>{
-                foreach( var seedProduct in SeedData.Products)
+            // Reset the sequence so new inserts don't collide with seeded Ids
+            context.Database.ExecuteSqlRaw("SELECT setval('\"Products_Id_seq\"', (SELECT MAX(\"Id\") FROM \"Products\"))");
+
+        }).UseAsyncSeeding(async (context, _, cancellationToken) =>
+        {
+            foreach(var seedProduct in SeedData.Products)
+            {
+               var product = await context.Set<Product>().FirstOrDefaultAsync(p => p.Id == seedProduct.Id, cancellationToken);
+               if(product is null)
                 {
-                   var product=await context.Set<Product>().FirstOrDefaultAsync(p=>p.Id==seedProduct.Id,cancellationToken);
-                   if(product is null)
-                    {
-                         context.Set<Product>().Add(seedProduct);
-                    }
+                     context.Set<Product>().Add(seedProduct);
                 }
-                    await context.SaveChangesAsync(cancellationToken);
-            }));
+            }
+            await context.SaveChangesAsync(cancellationToken);
+
+            // Reset the sequence so new inserts don't collide with seeded Ids
+            await context.Database.ExecuteSqlRawAsync("SELECT setval('\"Products_Id_seq\"', (SELECT MAX(\"Id\") FROM \"Products\"))", cancellationToken);
+        }));
             
         }
         public static void AddIdentityContext(this WebApplicationBuilder builder){
@@ -46,6 +53,6 @@
         {
             options.Password.RequiredLength=8;
             options.User.RequireUniqueEmail=true;
-        }).AddEntityFrameworkStores<AppDbContex>();
+        }).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContex>();
         }
     }

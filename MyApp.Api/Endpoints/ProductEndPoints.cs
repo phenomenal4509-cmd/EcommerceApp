@@ -36,6 +36,9 @@ public static class ProductEndPoints
             ProductDetailsDto productDetails= new (product.Id,product.Name,product.Price,product.Description);
             
             return Results.Created($"/product/{product.Id}",productDetails);
+        }).RequireAuthorization((policy) =>
+        {
+            policy.RequireRole("Admin");
         });
         app.MapPut("/product/{id}", (int id ,UpdateProductDto product,AppDbContex dbContext) =>
         {
@@ -50,6 +53,9 @@ public static class ProductEndPoints
             exisitingGame.Description=product.Description;
             dbContext.SaveChanges();
             return Results.NoContent();
+        }).RequireAuthorization((policy) =>
+        {
+            policy.RequireRole("Admin");
         });
         app.MapDelete("/product/{id}",(int id,AppDbContex dbContext) =>
         {
@@ -61,6 +67,9 @@ public static class ProductEndPoints
             dbContext.Products.Remove(exisitingGame);
             dbContext.SaveChanges();   
             return Results.NoContent();         
+        }).RequireAuthorization((policy) =>
+        {
+            policy.RequireRole("Admin");
         });
 
     }

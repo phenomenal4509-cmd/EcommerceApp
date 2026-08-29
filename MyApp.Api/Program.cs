@@ -8,7 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddAppStoreDb();
 builder.AddIdentityContext();
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization((options) =>
+{
+    options.AddPolicy("PremiumUser", (policy) =>
+    {
+        policy.RequireClaim("AccountType","Premium");
+    });
+});
 
 var app = builder.Build();
 

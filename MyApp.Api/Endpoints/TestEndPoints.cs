@@ -21,7 +21,7 @@ public static class TestEndPoints
                 }
             );     
         }).RequireAuthorization();
-        app.MapPost("/test/role",(HttpContext context)=>{
+        app.MapGet("/test/role",(HttpContext context)=>{
             var role=context.User.FindFirstValue(ClaimTypes.Role);
             return Results.Ok(role);
         }).RequireAuthorization();
@@ -64,6 +64,10 @@ public static class TestEndPoints
             return result.Succeeded?
             Results.NoContent():Results.BadRequest(result.Errors);
         }).RequireAuthorization();
+        app.MapPost("/premium", () =>
+        {
+            return "Welcome Premium User";
+        }).RequireAuthorization("PremiumUser");
     }
     
 }

@@ -6,7 +6,7 @@ using MyApp.Api.Models;
 namespace MyApp.Api.Data;
 
 public class AppDbContex(DbContextOptions<AppDbContex> options)
-    : IdentityDbContext<IdentityUser>(options)
+    : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Order> Orders => Set<Order>();

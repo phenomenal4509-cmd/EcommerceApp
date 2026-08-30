@@ -49,7 +49,7 @@
             
         }
         public static void AddIdentityContext(this WebApplicationBuilder builder){
-        builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
+        builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
         {
             options.Password.RequiredLength=8;
             options.User.RequireUniqueEmail=true;

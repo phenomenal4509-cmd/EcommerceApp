@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using MyApp.Api.Data;
 namespace MyApp.Api.EndPoints;
 public static class TestEndPoints
 {
@@ -25,7 +26,7 @@ public static class TestEndPoints
             var role=context.User.FindFirstValue(ClaimTypes.Role);
             return Results.Ok(role);
         }).RequireAuthorization();
-        app.MapPost("/create/claim", async (HttpContext context,UserManager<IdentityUser> userManager) =>
+        app.MapPost("/create/claim", async (HttpContext context,UserManager<ApplicationUser> userManager) =>
         {
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -53,7 +54,7 @@ public static class TestEndPoints
             return Results.Ok("Premium claim added");
         })
         .RequireAuthorization();
-        app.MapDelete("/test/delete", async(UserManager<IdentityUser>userManager,HttpContext context) =>
+        app.MapDelete("/test/delete", async(UserManager<ApplicationUser>userManager,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 

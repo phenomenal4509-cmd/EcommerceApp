@@ -23,7 +23,7 @@ builder.Services.AddAuthorization((options) =>
 
 var app = builder.Build();
 
-app.MapIdentityApi<IdentityUser>();
+app.MapIdentityApi<ApplicationUser>();
 
 app.MigrateDb();
 app.MapAllEndpoints();

@@ -10,15 +10,49 @@ public static class OrderEndPoints
 {
     public static void MapOrderEndPoints(this WebApplication app)
     {
+        app.MapGet("/order",(HttpContext context, AppDbContex dbContext) =>
+        {
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Results.BadRequest("Can not process UserId");
+            }
+            var orders = dbContext.Orders.Include(o=>o.OrderItems).Include(o=>o.TrackingHistory).Where(o=> o.UserId==userId).ToList();
+            if(orders.Count == 0)
+            {
+                return Results.Ok(new List<OrderDetailsDto>());
+            }
+            var details = new List<OrderDetailsDto>();
+            foreach(var order in orders)
+            {
+                var itemDetails = order.OrderItems
+                .Select(item => new OrderItemDetailsDto(item.ProductId, item.Quantity, item.UnitPrice))
+                .ToList();
 
-        app.MapGet("/order", (HttpContext context, AppDbContex DbContext) =>
+                var trackingHistory = order.TrackingHistory
+                .Select(t => new TrackingHistoryDto(t.Status, t.StatusChangedAt))
+                .ToList();
+
+                OrderDetailsDto orderDetails = new(
+                order.Id,
+                order.TotalCost,
+                order.OrderDate,
+                order.CurrentStatus,
+                itemDetails,
+                trackingHistory
+                );
+                details.Add(orderDetails);
+            }
+            return Results.Ok(details);
+        }).RequireAuthorization();
+        app.MapGet("/order/{id}", (int id,HttpContext context, AppDbContex DbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 {
                     return Results.Unauthorized();
                 }
-            var order = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.UserId==userId);
+            var order = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.UserId==userId && o.Id==id);
             if (order is null)
             {
                 return Results.NotFound("No Order with this Id exists");
@@ -83,7 +117,7 @@ public static class OrderEndPoints
             }
             order.TotalCost = totalCost;
             DbContext.Orders.Add(order);
-            DbContext.SaveChanges(); // Step 1: Insert Order + OrderItems → order.Id is now the real DB Id
+            DbContext.SaveChanges(); 
 
             Tracking tracking = new()
             {
@@ -116,14 +150,14 @@ public static class OrderEndPoints
         }).RequireAuthorization();
 
 
-        app.MapPut("/order", ( AppDbContex DbContext, UpdateOrderDto updateOrder,HttpContext context) =>
+        app.MapPut("/order/{id}", (int id, AppDbContex DbContext, UpdateOrderDto updateOrder,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 {
                     return Results.Unauthorized();
                 }
-            var existingOrder = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.UserId==userId);
+            var existingOrder = DbContext.Orders.Include(o => o.OrderItems).Include(o => o.TrackingHistory).FirstOrDefault(o => o.UserId==userId&&o.Id==id);
 
             if (existingOrder is null)
             {
@@ -181,10 +215,10 @@ public static class OrderEndPoints
         }).RequireAuthorization();
 
 
-        app.MapDelete("/order", (HttpContext context, AppDbContex dbContext) =>
+        app.MapDelete("/order/{id}", (int id ,HttpContext context, AppDbContex dbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var existingOrder = dbContext.Orders.FirstOrDefault(o => o.UserId == userId);
+            var existingOrder = dbContext.Orders.FirstOrDefault(o => o.UserId == userId&& o.Id==id);
 
             if (existingOrder is null)
             {

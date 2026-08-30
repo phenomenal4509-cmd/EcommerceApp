@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
 namespace MyApp.Api.EndPoints;
@@ -14,9 +15,11 @@ public static class RoleEndPoints
             ? Results.Ok("Role created")
             : Results.BadRequest(result.Errors);
         });
-        app.MapPost("/create/role/make-admin", async(UserManager<IdentityUser> userManager)  =>
+        app.MapPost("/upgrade/role/admin", async(UserManager<IdentityUser> userManager,HttpContext context)  =>
         {
-            var user=await userManager.FindByEmailAsync("ibrahim1234@gmail.com");
+            var userEmail=context.User.FindFirstValue(ClaimTypes.Email);
+            if(userEmail is null) return Results.BadRequest("Could not process user's mail");
+            var user=await userManager.FindByEmailAsync(userEmail);
             if(user is null)
             {
                 return Results.NotFound("User does not exist");

@@ -14,6 +14,11 @@ builder.Services.AddAuthorization((options) =>
     {
         policy.RequireClaim("AccountType","Premium");
     });
+    options.AddPolicy("PremiumAdmin", (policy) =>
+    {
+        policy.RequireClaim("AccountType","Premium");
+        policy.RequireRole("Admin");
+    });
 });
 
 var app = builder.Build();

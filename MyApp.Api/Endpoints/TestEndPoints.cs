@@ -56,18 +56,24 @@ public static class TestEndPoints
         app.MapDelete("/test/delete", async(UserManager<IdentityUser>userManager,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if(userId is null) return Results.BadRequest("No user found");
+
             var user =await  userManager.FindByIdAsync(userId);
+
             if(user is null) return Results.BadRequest($"No user found with the Id {userId}");
+
             var claim = new Claim("AccountType", "Premium");
+
             var result= await userManager.RemoveClaimAsync(user,claim);
+
             return result.Succeeded?
             Results.NoContent():Results.BadRequest(result.Errors);
         }).RequireAuthorization();
         app.MapPost("/premium", () =>
         {
             return "Welcome Premium User";
-        }).RequireAuthorization("PremiumUser");
+        }).RequireAuthorization("PremiumAdmin");
     }
     
 }

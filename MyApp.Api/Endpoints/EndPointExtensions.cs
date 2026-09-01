@@ -1,3 +1,5 @@
+using MyApp.APi.EndPoints;
+
 namespace MyApp.Api.EndPoints;
 
 public static class EndPointExtensions
@@ -10,5 +12,6 @@ public static class EndPointExtensions
         app.MapTrackingEndPoints();
         app.MapTestEndPoints();
         app.MapRoleEndPoints();
+        app.MapUserEndPoints();
     }
 }

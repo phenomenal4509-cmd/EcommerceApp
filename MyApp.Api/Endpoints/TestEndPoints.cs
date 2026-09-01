@@ -11,7 +11,8 @@ public static class TestEndPoints
             var userId=(context.User.FindFirstValue(ClaimTypes.NameIdentifier));
             var claim=context.User.FindFirstValue("AccountType");
             var name=context.User.FindFirstValue(ClaimTypes.Name);            
-            var email=context.User.FindFirstValue(ClaimTypes.Email);  
+            var email=context.User.FindFirstValue(ClaimTypes.Email);
+            
             return Results.Ok(
                 new
                 {

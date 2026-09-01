@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.EndPoints;
-
+using Microsoft.AspNetCore.Authentication.BearerToken;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddAppStoreDb();
@@ -19,6 +19,10 @@ builder.Services.AddAuthorization((options) =>
         policy.RequireClaim("AccountType","Premium");
         policy.RequireRole("Admin");
     });
+});
+builder.Services.Configure<BearerTokenOptions>((options) =>
+{
+    options.BearerTokenExpiration=TimeSpan.FromHours(2);// this changes the actual expiration of the bearer token , the minimum it is the better but the decision should be intellectual
 });
 
 var app = builder.Build();

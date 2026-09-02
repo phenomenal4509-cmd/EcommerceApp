@@ -10,8 +10,6 @@ public static class EndPointExtensions
         app.MapOrderEndPoints();
         app.MapCartEndPoints();
         app.MapTrackingEndPoints();
-        app.MapTestEndPoints();
-        app.MapRoleEndPoints();
         app.MapUserEndPoints();
     }
 }

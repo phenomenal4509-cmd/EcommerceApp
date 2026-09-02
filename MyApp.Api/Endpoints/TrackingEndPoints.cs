@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.Dto;
@@ -9,9 +10,11 @@ public static class TrackingEndPoints
 {
     public static void MapTrackingEndPoints(this WebApplication app)
     {
-        app.MapGet("/order/{id}/tracking",(int id,AppDbContex dbContext) =>
+        app.MapGet("/order/{id}/tracking",(int id,AppDbContex dbContext,HttpContext context) =>
         {
-            var order=dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefault(o=>o.Id==id);
+            var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(userId is null) return Results.Unauthorized();
+            var order=dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefault(o=>o.Id==id && userId==o.UserId);
             if(order is null)
             {
                 return Results.NotFound("No such order exists");
@@ -28,35 +31,30 @@ public static class TrackingEndPoints
             TrackingDto sendHistory= new(order.Id,order.CurrentStatus,trackingHistory);
 
             return Results.Ok(sendHistory);
-        });
-        app.MapPut("/order/{id}/tracking", (int id , AppDbContex dbContext,UpdateTrackingDto updateTracking) =>
+        }).RequireAuthorization();
+        app.MapPost("/order/{id}/tracking",(int id, AppDbContex dbContext, UpdateTrackingDto updateTracking) =>
         {
-            var order=dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefault(o=>o.Id==id);
-            if(order is null)
+            var order = dbContext.Orders.Include(o => o.TrackingHistory).FirstOrDefault(o => o.Id == id);
+
+            if (order is null)
             {
                 return Results.NotFound("No such order exists");
             }
+
             Tracking newTrack = new()
             {
-                OrderId=order.Id,
-                Status=updateTracking.Status,
-                StatusChangedAt=DateTimeOffset.UtcNow
+                OrderId = order.Id,
+                Status = updateTracking.Status,
+                StatusChangedAt = DateTimeOffset.UtcNow
             };
+
             order.CurrentStatus = updateTracking.Status;
-            dbContext.Tracking.Add(newTrack);  
+            dbContext.Tracking.Add(newTrack);
             dbContext.SaveChanges();
-            ICollection<TrackingHistoryDto>trackingHistory=new List<TrackingHistoryDto>();
-            foreach(var element in order.TrackingHistory)
-            {
-            TrackingHistoryDto tracking=new(
-                element.Status,
-                element.StatusChangedAt
-            );
-            trackingHistory.Add(tracking);              
-            }
-            TrackingDto sendHistory= new(order.Id,order.CurrentStatus,trackingHistory);
-            return Results.Ok(sendHistory);
-        });
-        
+
+            // build response...
+
+            return Results.Ok();
+        }).RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
-}
+        }

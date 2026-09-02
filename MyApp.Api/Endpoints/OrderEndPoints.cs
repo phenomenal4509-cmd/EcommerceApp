@@ -10,7 +10,7 @@ public static class OrderEndPoints
 {
     public static void MapOrderEndPoints(this WebApplication app)
     {
-        app.MapGet("/order",(HttpContext context, AppDbContex dbContext) =>
+        app.MapGet("/orders",(HttpContext context, AppDbContex dbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -45,7 +45,7 @@ public static class OrderEndPoints
             }
             return Results.Ok(details);
         }).RequireAuthorization();
-        app.MapGet("/order/{id}", (int id,HttpContext context, AppDbContex DbContext) =>
+        app.MapGet("/orders/{id}", (int id,HttpContext context, AppDbContex DbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -77,7 +77,7 @@ public static class OrderEndPoints
 
             return Results.Ok(orderDetails);
         }).RequireAuthorization();
-        app.MapPost("/order", (CreateOrderDto newOrder, AppDbContex DbContext,HttpContext context) =>
+        app.MapPost("/orders", (CreateOrderDto newOrder, AppDbContex DbContext,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(string.IsNullOrEmpty(userId))
@@ -146,11 +146,11 @@ public static class OrderEndPoints
                 trackingHistory
             );
 
-            return Results.Created($"/order/{order.Id}", orderDetails);
+            return Results.Created($"/orders/{order.Id}", orderDetails);
         }).RequireAuthorization();
 
 
-        app.MapPut("/order/{id}", (int id, AppDbContex DbContext, UpdateOrderDto updateOrder,HttpContext context) =>
+        app.MapPut("/orders/{id}", (int id, AppDbContex DbContext, UpdateOrderDto updateOrder,HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -215,7 +215,7 @@ public static class OrderEndPoints
         }).RequireAuthorization();
 
 
-        app.MapDelete("/order/{id}", (int id ,HttpContext context, AppDbContex dbContext) =>
+        app.MapDelete("/orders/{id}", (int id ,HttpContext context, AppDbContex dbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingOrder = dbContext.Orders.FirstOrDefault(o => o.UserId == userId&& o.Id==id);

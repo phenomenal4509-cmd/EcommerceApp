@@ -6,11 +6,11 @@ public static class ProductEndPoints
 {
     public static void MapProductEndpoints(this WebApplication app)
     {
-        app.MapGet("/product", (AppDbContex dbContext) =>
+        app.MapGet("/products", (AppDbContex dbContext) =>
         {
             return dbContext.Products.ToList() ;
         });
-        app.MapGet("/product/{id}",(int id ,AppDbContex dbContext) =>
+        app.MapGet("/products/{id}",(int id ,AppDbContex dbContext) =>
         {
             var exisitingGame = dbContext.Products.Find(id);
 
@@ -21,7 +21,7 @@ public static class ProductEndPoints
             ProductDto product= new(exisitingGame.Name,exisitingGame.Price,exisitingGame.Description);
             return Results.Ok(product);
         });
-        app.MapPost("/product", (CreateProductDto newProduct,AppDbContex dbContext) =>
+        app.MapPost("/products", (CreateProductDto newProduct,AppDbContex dbContext) =>
         {
             Product product = new()
             {
@@ -35,12 +35,12 @@ public static class ProductEndPoints
             dbContext.SaveChanges();
             ProductDetailsDto productDetails= new (product.Id,product.Name,product.Price,product.Description);
             
-            return Results.Created($"/product/{product.Id}",productDetails);
+            return Results.Created($"/products/{product.Id}",productDetails);
         }).RequireAuthorization((policy) =>
         {
             policy.RequireRole("Admin");
         });
-        app.MapPut("/product/{id}", (int id ,UpdateProductDto product,AppDbContex dbContext) =>
+        app.MapPut("/products/{id}", (int id ,UpdateProductDto product,AppDbContex dbContext) =>
         {
             var exisitingGame = dbContext.Products.Find(id);
 
@@ -57,7 +57,7 @@ public static class ProductEndPoints
         {
             policy.RequireRole("Admin");
         });
-        app.MapDelete("/product/{id}",(int id,AppDbContex dbContext) =>
+        app.MapDelete("/products/{id}",(int id,AppDbContex dbContext) =>
         {
             var exisitingGame = dbContext.Products.Find(id);
             if (exisitingGame is null)

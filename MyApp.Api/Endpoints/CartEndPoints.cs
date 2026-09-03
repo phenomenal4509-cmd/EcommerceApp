@@ -77,10 +77,34 @@ public static class CartEndPoints
                 {
                     return Results.Unauthorized();
                 }
+           
+            var existingUserCart = await dbContext.Cart.FirstOrDefaultAsync(c => c.UserID == userId);
+            if (existingUserCart is not null)
+            {
+                return Results.Conflict("You already have a cart. Use PUT /cart to update it.");
+            }
+
+            if (!cart.items.Any())
+            {
+                return Results.BadRequest("Cart must have at least one item.");
+            }
+
+            
+            var duplicateProduct = cart.items.GroupBy(i => i.ProductId).FirstOrDefault(g => g.Count() > 1);
+            if (duplicateProduct is not null)
+            {
+                return Results.BadRequest($"Product {duplicateProduct.Key} appears more than once. Adjust the quantity instead.");
+            }
+
             Cart newCart = new();
-            newCart.UserID=userId;
+            newCart.UserID = userId;
             foreach (var item in cart.items)
             {
+                if (item.Quantity <= 0)
+                    return Results.BadRequest($"Quantity must be at least 1 for product {item.ProductId}.");
+                if (item.Quantity > 50)
+                    return Results.BadRequest($"Quantity cannot exceed 50 for product {item.ProductId}.");
+
                 var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId);
 
                 if (product is null)
@@ -124,8 +148,25 @@ public static class CartEndPoints
                     return Results.NotFound("No such cart exists");
                 }
 
+                if (!update.items.Any())
+                {
+                    return Results.BadRequest("Cart must have at least one item.");
+                }
+
+                
+                var duplicateProduct = update.items.GroupBy(i => i.ProductId).FirstOrDefault(g => g.Count() > 1);
+                if (duplicateProduct is not null)
+                {
+                    return Results.BadRequest($"Product {duplicateProduct.Key} appears more than once. Adjust the quantity instead.");
+                }
+
                 foreach (var item in update.items)
                 {
+                    if (item.Quantity <= 0)
+                        return Results.BadRequest($"Quantity must be at least 1 for product {item.ProductId}.");
+                    if (item.Quantity > 50)
+                        return Results.BadRequest($"Quantity cannot exceed 50 for product {item.ProductId}.");
+
                     var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId);
                     if (product is null)
                     {

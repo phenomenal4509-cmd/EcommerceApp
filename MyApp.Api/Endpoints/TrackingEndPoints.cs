@@ -40,19 +40,44 @@ public static class TrackingEndPoints
             {
                 return Results.NotFound("No such order exists");
             }
+
+            // Define which statuses each status can transition to
+            var allowedTransitions = new Dictionary<string, HashSet<string>>
+            {
+                ["Pending"]    = ["Processing", "Cancelled"],
+                ["Processing"] = ["Shipped",     "Cancelled"],
+                ["Shipped"]    = ["Delivered"],
+                ["Delivered"]  = [],          // terminal — no further transitions
+                ["Cancelled"]  = [],          // terminal — no further transitions
+            };
+
+            var currentStatus = order.CurrentStatus;
+            var newStatus     = updateTracking.Status;
+
+            if (!allowedTransitions.ContainsKey(currentStatus))
+            {
+                return Results.BadRequest($"Unknown current status '{currentStatus}'.");
+            }
+
+            if (!allowedTransitions[currentStatus].Contains(newStatus))
+            {
+                var allowed = allowedTransitions[currentStatus];
+                var allowedStr = allowed.Any() ? string.Join(", ", allowed) : "none (terminal status)";
+                return Results.BadRequest($"Cannot transition from '{currentStatus}' to '{newStatus}'. " +$"Allowed transitions: {allowedStr}.");
+            }
             
             Tracking newTrack = new()
             {
                 OrderId = order.Id,
-                Status = updateTracking.Status,
+                Status = newStatus,
                 StatusChangedAt = DateTimeOffset.UtcNow
             };
 
-            order.CurrentStatus = updateTracking.Status;
+            order.CurrentStatus = newStatus;
             dbContext.Tracking.Add(newTrack);
             await dbContext.SaveChangesAsync();
 
             return Results.Ok();
         }).RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
-        }
+}

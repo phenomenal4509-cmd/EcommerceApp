@@ -115,6 +115,11 @@ public static class OrderEndPoints
                 return Results.Unauthorized();
             }
 
+            if (!newOrder.items.Any())
+            {
+                return Results.BadRequest("An order must have at least one item.");
+            }
+
             decimal totalCost = 0;
             string status = "Pending";
 
@@ -138,9 +143,19 @@ public static class OrderEndPoints
                         await transaction.RollbackAsync();
                         return Results.BadRequest("This Product is not available!");
                     }
-
+                    if (item.Quantity <= 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return Results.BadRequest($"Quantity must be at least 1 for product {existingProduct.Id}.");
+                    }
+                    if (item.Quantity >= 50)
+                    {
+                        await transaction.RollbackAsync();
+                        return Results.BadRequest($"Quantity exceeded for the item {existingProduct.Id}");
+                    }
                     decimal cost = existingProduct.Price * item.Quantity;
                     totalCost += cost;
+
 
                     OrderItem orderItem = new()
                     {
@@ -210,7 +225,6 @@ public static class OrderEndPoints
             {
                 return Results.Unauthorized();
             }
-
             var existingOrder = await DbContext.Orders
                 .Include(o => o.OrderItems).Include(o => o.TrackingHistory)
                 .FirstOrDefaultAsync(o => o.UserId == userId && o.Id == id);
@@ -219,6 +233,20 @@ public static class OrderEndPoints
             {
                 return Results.NotFound("No such Order exists");
             }
+
+            // Only allow edits when order is still Pending or Processing
+            if (existingOrder.CurrentStatus == "Shipped" ||
+                existingOrder.CurrentStatus == "Delivered" ||
+                existingOrder.CurrentStatus == "Cancelled")
+            {
+                return Results.BadRequest($"Cannot edit an order that is already '{existingOrder.CurrentStatus}'.");
+            }
+
+            if (!updateOrder.items.Any())
+            {
+                return Results.BadRequest("An order must have at least one item.");
+            }
+
 
             using var transaction = await DbContext.Database.BeginTransactionAsync();
 
@@ -237,7 +265,16 @@ public static class OrderEndPoints
                         await transaction.RollbackAsync();
                         return Results.BadRequest("This Product is not available!");
                     }
-
+                    if (item.Quantity <= 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return Results.BadRequest($"Quantity must be at least 1 for product {existingProduct.Id}.");
+                    }
+                    if (item.Quantity >= 20)
+                    {
+                        await transaction.RollbackAsync();
+                        return Results.BadRequest($"Quantity exceeded for the item {existingProduct.Id}");
+                    }
                     decimal cost = existingProduct.Price * item.Quantity;
                     totalCost += cost;
 
@@ -300,7 +337,11 @@ public static class OrderEndPoints
             {
                 return Results.NotFound("No such Order exists");
             }
-
+            if (existingOrder.CurrentStatus == "Shipped" ||
+                existingOrder.CurrentStatus == "Delivered")
+            {
+                return Results.BadRequest($"Cannot delete an order that is already '{existingOrder.CurrentStatus}'.");
+            }
             using var transaction = await dbContext.Database.BeginTransactionAsync();
 
             try

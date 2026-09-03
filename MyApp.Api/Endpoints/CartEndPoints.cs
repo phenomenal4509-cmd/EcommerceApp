@@ -8,7 +8,7 @@ namespace MyApp.Api.EndPoints;
 
 public static class CartEndPoints
 {
-    public static CartDetailsDto? GetDetails(
+    public static async Task<CartDetailsDto?> GetDetails(
         Cart existingCart,
         AppDbContex dbContext)
     {
@@ -17,8 +17,8 @@ public static class CartEndPoints
 
         foreach (var item in existingCart.CartItems)
         {
-            var product = dbContext.Products
-                .FirstOrDefault(p => p.Id == item.ProductId);
+            var product = await dbContext.Products
+                .FirstOrDefaultAsync(p => p.Id == item.ProductId);
 
             if (product is null)
             {
@@ -39,28 +39,28 @@ public static class CartEndPoints
             products.Add(newItem);
         }
 
-        return new CartDetailsDto(existingCart.Id,totalCost,products);
+        return new CartDetailsDto(existingCart.Id, totalCost, products);
     }
 
     public static void MapCartEndPoints(this WebApplication app)
     {
-        app.MapGet("/cart", (AppDbContex dbContext,HttpContext context) =>
+        app.MapGet("/cart", async (AppDbContex dbContext, HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 {
                     return Results.Unauthorized();
                 }
-            var existingCart = dbContext.Cart
+            var existingCart = await dbContext.Cart
                 .Include(c => c.CartItems)
-                .FirstOrDefault(c => c.UserID == userId);
+                .FirstOrDefaultAsync(c => c.UserID == userId);
 
             if (existingCart is null)
             {
                 return Results.NotFound("No such cart exists");
             }
 
-            var cartDetails = GetDetails(existingCart, dbContext);
+            var cartDetails = await GetDetails(existingCart, dbContext);
 
             if (cartDetails is null)
             {
@@ -70,7 +70,7 @@ public static class CartEndPoints
             return Results.Ok(cartDetails);
         }).RequireAuthorization();
 
-        app.MapPost("/cart", (CreateCartDto cart, AppDbContex dbContext,HttpContext context) =>
+        app.MapPost("/cart", async (CreateCartDto cart, AppDbContex dbContext, HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -81,7 +81,7 @@ public static class CartEndPoints
             newCart.UserID=userId;
             foreach (var item in cart.items)
             {
-                var product = dbContext.Products.FirstOrDefault(p => p.Id == item.ProductId);
+                var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId);
 
                 if (product is null)
                 {
@@ -98,9 +98,9 @@ public static class CartEndPoints
             }
 
             dbContext.Cart.Add(newCart);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
-            var cartDetails = GetDetails(newCart, dbContext);
+            var cartDetails = await GetDetails(newCart, dbContext);
 
             if (cartDetails is null)
             {
@@ -110,14 +110,14 @@ public static class CartEndPoints
             return Results.Created($"/cart/{newCart.Id}", cartDetails);
         }).RequireAuthorization();
 
-        app.MapPut("/cart",(UpdateCartDto update, HttpContext context, AppDbContex dbContext) =>
+        app.MapPut("/cart", async (UpdateCartDto update, HttpContext context, AppDbContex dbContext) =>
             {
                 var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Results.Unauthorized();
                 }
-                var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.UserID == userId);
+                var existingCart = await dbContext.Cart.Include(c => c.CartItems).FirstOrDefaultAsync(c => c.UserID == userId);
 
                 if (existingCart is null)
                 {
@@ -126,7 +126,7 @@ public static class CartEndPoints
 
                 foreach (var item in update.items)
                 {
-                    var product = dbContext.Products.FirstOrDefault(p => p.Id == item.ProductId);
+                    var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId);
                     if (product is null)
                     {
                         return Results.NotFound($"Product with Id {item.ProductId} does not exist");
@@ -146,9 +146,9 @@ public static class CartEndPoints
                     existingCart.CartItems.Add(newItem);
                 }
 
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
 
-                var cartDetails = GetDetails(existingCart, dbContext);
+                var cartDetails = await GetDetails(existingCart, dbContext);
 
                 if (cartDetails is null)
                 {
@@ -158,14 +158,14 @@ public static class CartEndPoints
                 return Results.Ok(cartDetails);
             }).RequireAuthorization();
 
-        app.MapDelete("/cart", (HttpContext context, AppDbContex dbContext) =>
+        app.MapDelete("/cart", async (HttpContext context, AppDbContex dbContext) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 {
                     return Results.Unauthorized();
                 }
-            var existingCart = dbContext.Cart.Include(c => c.CartItems).FirstOrDefault(c => c.UserID == userId);
+            var existingCart = await dbContext.Cart.Include(c => c.CartItems).FirstOrDefaultAsync(c => c.UserID == userId);
             if (existingCart is null)
             {
                 return Results.NotFound("No such cart exists");
@@ -173,7 +173,7 @@ public static class CartEndPoints
             dbContext.CartItem.RemoveRange(existingCart.CartItems);
             dbContext.Cart.Remove(existingCart);
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return Results.NoContent();
         }).RequireAuthorization();

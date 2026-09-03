@@ -1,0 +1,13 @@
+{
+    "simpleCodingInsights.inactivityTimeout": 1,
+    "simpleCodingInsights.focusTimeout": 0.5,
+    "simpleCodingInsights.statusBar.showSeconds": true,
+    "simpleCodingInsights.statusBar.icon": "$(code)",
+    "simpleCodingInsights.statusBar.backgroundStyle": "warning",
+    "simpleCodingInsights.statusBar.color": "",
+    "simpleCodingInsights.health.enableNotifications": false,
+    "simpleCodingInsights.health.modalNotifications": true,
+    "simpleCodingInsights.health.eyeRestInterval": 20,
+    "simpleCodingInsights.health.stretchInterval": 30,
+    "simpleCodingInsights.health.breakThreshold": 90
+}

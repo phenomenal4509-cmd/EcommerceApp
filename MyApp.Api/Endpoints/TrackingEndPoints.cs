@@ -10,11 +10,11 @@ public static class TrackingEndPoints
 {
     public static void MapTrackingEndPoints(this WebApplication app)
     {
-        app.MapGet("/order/{id}/tracking",(int id,AppDbContex dbContext,HttpContext context) =>
+        app.MapGet("/orders/{id}/tracking", async (int id, AppDbContex dbContext, HttpContext context) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(userId is null) return Results.Unauthorized();
-            var order=dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefault(o=>o.Id==id && userId==o.UserId);
+            var order = await dbContext.Orders.Include(o=>o.TrackingHistory).FirstOrDefaultAsync(o=>o.Id==id && userId==o.UserId);
             if(order is null)
             {
                 return Results.NotFound("No such order exists");
@@ -32,9 +32,9 @@ public static class TrackingEndPoints
 
             return Results.Ok(sendHistory);
         }).RequireAuthorization();
-        app.MapPost("/order/{id}/tracking",(int id, AppDbContex dbContext, UpdateTrackingDto updateTracking) =>
+        app.MapPost("/orders/{id}/tracking", async (int id, AppDbContex dbContext, UpdateTrackingDto updateTracking) =>
         {
-            var order = dbContext.Orders.Include(o => o.TrackingHistory).FirstOrDefault(o => o.Id == id);
+            var order = await dbContext.Orders.Include(o => o.TrackingHistory).FirstOrDefaultAsync(o => o.Id == id);
 
             if (order is null)
             {
@@ -50,9 +50,7 @@ public static class TrackingEndPoints
 
             order.CurrentStatus = updateTracking.Status;
             dbContext.Tracking.Add(newTrack);
-            dbContext.SaveChanges();
-
-            // build response...
+            await dbContext.SaveChangesAsync();
 
             return Results.Ok();
         }).RequireAuthorization(policy => policy.RequireRole("Admin"));

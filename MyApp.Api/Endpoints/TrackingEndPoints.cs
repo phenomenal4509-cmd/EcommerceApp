@@ -40,7 +40,7 @@ public static class TrackingEndPoints
             {
                 return Results.NotFound("No such order exists");
             }
-
+            
             Tracking newTrack = new()
             {
                 OrderId = order.Id,

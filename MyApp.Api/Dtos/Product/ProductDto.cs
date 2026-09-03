@@ -4,6 +4,6 @@ namespace MyApp.Api.Dto;
 
 public record ProductDto(
     [Range(1,100)][Required]string Name,
-    [Required]decimal Price,
+    [Range(0.01,double.MaxValue)][Required]decimal Price,
     [Required]string Description
 );

@@ -41,14 +41,14 @@ public static class TrackingEndPoints
                 return Results.NotFound("No such order exists");
             }
 
-            // Define which statuses each status can transition to
+            
             var allowedTransitions = new Dictionary<string, HashSet<string>>
             {
                 ["Pending"]    = ["Processing", "Cancelled"],
                 ["Processing"] = ["Shipped",     "Cancelled"],
                 ["Shipped"]    = ["Delivered"],
-                ["Delivered"]  = [],          // terminal — no further transitions
-                ["Cancelled"]  = [],          // terminal — no further transitions
+                ["Delivered"]  = [],          
+                ["Cancelled"]  = [],        
             };
 
             var currentStatus = order.CurrentStatus;

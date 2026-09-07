@@ -8,9 +8,17 @@
     {
         public static void MigrateDb(this WebApplication app)
         {
-            using var scope= app.Services.CreateScope();
-            var dbContext= scope.ServiceProvider.GetRequiredService<AppDbContex>();
+            using var scope = app.Services.CreateScope();
+
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContex>();
             dbContext.Database.Migrate();
+
+
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            if (!roleManager.RoleExistsAsync("Admin").GetAwaiter().GetResult())
+            {
+                roleManager.CreateAsync(new IdentityRole("Admin")).GetAwaiter().GetResult();
+            }
         }
         public static void AddAppStoreDb(this WebApplicationBuilder builder)
         {

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using MyApp.Api.Data;
 using MyApp.Api.Dto;
 
@@ -42,7 +43,7 @@ public static class UserEndPoints
                 }
             );     
         }).RequireAuthorization();
-        app.MapPut("/users/me",async(HttpContext context,UserManager<ApplicationUser> userManager, UpdateUserDto request) =>
+        app.MapPut("/users/me", async(HttpContext context, [FromServices] UserManager<ApplicationUser> userManager, UpdateUserDto request) =>
         {
             var userId=context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if(userId is null)

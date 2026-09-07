@@ -18,7 +18,9 @@ public class AppDbContex(DbContextOptions<AppDbContex> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
+        modelBuilder.Entity<Product>()
+        .Property(p=>p.Version)
+        .IsConcurrencyToken();
         modelBuilder.Entity<OrderItem>()
             .HasOne<Order>()
             .WithMany(o => o.OrderItems)

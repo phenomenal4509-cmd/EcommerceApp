@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using MyApp.Api.Dto;
 using MyApp.Api.Data;
 using System.Security.Claims;
@@ -21,7 +22,7 @@ public static class AdminEndPoints
         {
             policy.RequireRole("Admin");
         });
-        app.MapPost("/admin/users/{id}/roles", async(string id,UserManager<ApplicationUser>userManager,AddRoleDto request) =>
+        app.MapPost("/admin/users/{id}/roles", async(string id, [FromServices] UserManager<ApplicationUser> userManager, AddRoleDto request) =>
         {
             var user=await userManager.FindByIdAsync(id);
             if (user is null)
@@ -32,10 +33,7 @@ public static class AdminEndPoints
             return result.Succeeded
             ? Results.Ok("Role has been added")
             : Results.BadRequest(result.Errors);
-        }).RequireAuthorization((policy) =>
-        {
-            policy.RequireRole("Admin");
-        });
+        }).RequireAuthorization();
         app.MapDelete("/admin/users/{id}/roles/{role}",async(string role,string id ,UserManager<ApplicationUser> userManager) =>
         {
             var user=await userManager.FindByIdAsync(id);
@@ -82,7 +80,7 @@ public static class AdminEndPoints
         {
             policy.RequireRole("Admin");
         });
-        app.MapPost("/admin/users/{id}/claims",async(string id,UserManager<ApplicationUser> userManager,AddClaimDto request)=>
+        app.MapPost("/admin/users/{id}/claims",async(string id, [FromServices] UserManager<ApplicationUser> userManager, AddClaimDto request)=>
         {
            var user=await userManager.FindByIdAsync(id);
            if(user is null) return Results.NotFound($"No such user exist with the id {id}");
@@ -94,15 +92,15 @@ public static class AdminEndPoints
         {
             policy.RequireRole("Admin");
         });
-        app.MapDelete("/admin/users/{id}/claim",async (string id ,UserManager<ApplicationUser> userManager,RemoveClaimDto request) =>
+        app.MapDelete("/admin/users/{id}/claim/{claimType}/{claimValue}",async (string id, string claimType, string claimValue, [FromServices] UserManager<ApplicationUser> userManager) =>
         {
             var user=await userManager.FindByIdAsync(id);
             if(user is null)
             {
                 return Results.NotFound($"No such user exist with the id {id}");
             }
-            var claim = new Claim (request.Type,request.Value);
-            var result = await userManager.RemoveClaimAsync(user,claim);
+            var claim = new Claim(claimType, claimValue);
+            var result = await userManager.RemoveClaimAsync(user, claim);
 
             return result.Succeeded
             ? Results.Ok("Claim removed")
@@ -129,5 +127,24 @@ public static class AdminEndPoints
                 : Results.BadRequest(result.Errors);
         })
         .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        app.MapGet("/me", async (ClaimsPrincipal principal,UserManager<ApplicationUser> userManager) =>
+        {
+            var userId = userManager.GetUserId(principal);
+
+            if (userId is null)
+                return Results.Unauthorized();
+
+            var user = await userManager.FindByIdAsync(userId);
+
+            if (user is null)
+                return Results.NotFound("No such user found");
+
+            return Results.Ok(new
+            {
+                id = user.Id,
+                email = user.Email
+            });
+        })
+        .RequireAuthorization();
     }
 }

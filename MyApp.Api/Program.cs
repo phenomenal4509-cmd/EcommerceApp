@@ -2,11 +2,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.EndPoints;
+using MyApp.Api.Exceptions;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddAppStoreDb();
 builder.AddIdentityContext();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddAuthorization((options) =>
 {
@@ -27,6 +30,7 @@ builder.Services.Configure<BearerTokenOptions>((options) =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.MapIdentityApi<ApplicationUser>();
 
 app.MigrateDb();

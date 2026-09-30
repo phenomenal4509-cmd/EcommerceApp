@@ -27,6 +27,7 @@ builder.Services.Configure<BearerTokenOptions>((options) =>
 {
     options.BearerTokenExpiration=TimeSpan.FromHours(2);// this changes the actual expiration of the bearer token , the minimum it is the better but the decision should be intellectual
 });
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

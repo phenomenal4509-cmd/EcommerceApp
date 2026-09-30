@@ -17,7 +17,7 @@ public static class OrderEndPoints
 
             var orders = await dbContext.Orders
                 .Include(o => o.OrderItems).Include(o => o.TrackingHistory)
-                .Where(o => o.UserId == userId)
+                .Where(o => o.UserId == userId) 
                 .ToListAsync();
 
             var details = orders.Select(order => new OrderDetailsDto(
@@ -59,86 +59,6 @@ public static class OrderEndPoints
                 order.Id, order.TotalCost, order.OrderDate,
                 order.CurrentStatus, itemDetails, trackingHistory));
         }).RequireAuthorization();
-
-
-
-        app.MapPost("/orders", async (CreateOrderDto newOrder, AppDbContex dbContext, HttpContext context) =>
-        {
-            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
-            if (!newOrder.items.Any())
-                return Results.BadRequest("An order must have at least one item.");
-
-            decimal totalCost = 0;
-            const string status = "Pending";
-
-            using var transaction = await dbContext.Database.BeginTransactionAsync();
-            try
-            {
-                Order order = new()
-                {
-                    UserId = userId,
-                    OrderDate = DateOnly.FromDateTime(DateTime.Now),
-                    CurrentStatus = status
-                };
-
-                foreach (var item in newOrder.items)
-                {
-                    var existingProduct = await dbContext.Products.FindAsync(item.ProductId);
-                    if (existingProduct is null)
-                    {
-                        await transaction.RollbackAsync();
-                        return Results.NotFound($"Product {item.ProductId} is not available.");
-                    }
-                    if (item.Quantity <= 0)
-                    {
-                        await transaction.RollbackAsync();
-                        return Results.BadRequest($"Quantity must be at least 1 for product {existingProduct.Id}.");
-                    }
-                    if (item.Quantity >= 50)
-                    {
-                        await transaction.RollbackAsync();
-                        return Results.BadRequest($"Quantity cannot exceed 49 for product {existingProduct.Id}.");
-                    }
-
-                    totalCost += existingProduct.Price * item.Quantity;
-                    order.OrderItems.Add(new OrderItem
-                    {
-                        ProductId = existingProduct.Id,
-                        Quantity = item.Quantity,
-                        UnitPrice = existingProduct.Price
-                    });
-                }
-
-                order.TotalCost = totalCost;
-                dbContext.Orders.Add(order);
-                await dbContext.SaveChangesAsync();
-
-                Tracking tracking = new()
-                {
-                    OrderId = order.Id,
-                    Status = status,
-                    StatusChangedAt = DateTimeOffset.UtcNow
-                };
-                dbContext.Tracking.Add(tracking);
-                await dbContext.SaveChangesAsync();
-
-                var orderDetails = new OrderDetailsDto(
-                    order.Id, order.TotalCost, order.OrderDate, order.CurrentStatus,
-                    order.OrderItems.Select(i => new OrderItemDetailsDto(i.ProductId, i.Quantity, i.UnitPrice)).ToList(),
-                    [new TrackingHistoryDto(tracking.Status, tracking.StatusChangedAt)]
-                );
-
-                await transaction.CommitAsync();
-                return Results.Created($"/orders/{order.Id}", orderDetails);
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }).RequireAuthorization();
-
 
 
         app.MapPut("/orders/{id}", async (int id, AppDbContex dbContext, UpdateOrderDto updateOrder, HttpContext context) =>

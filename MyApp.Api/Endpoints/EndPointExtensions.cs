@@ -12,5 +12,6 @@ public static class EndPointExtensions
         app.MapTrackingEndPoints();
         app.MapUserEndPoints();
         app.MapAdminEndPoints();
+        app.MapCheckOutEndPoints();
     }
 }

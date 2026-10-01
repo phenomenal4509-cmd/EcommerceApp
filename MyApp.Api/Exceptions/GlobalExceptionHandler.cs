@@ -4,11 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Api.Exceptions;
 
-/// <summary>
-/// Catches every unhandled exception and returns a consistent RFC-7807
-/// ProblemDetails JSON response. DbUpdateConcurrencyException is intentionally
-/// skipped — endpoints own that with tailored 409 Conflict responses.
-/// </summary>
 public class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
@@ -27,11 +22,13 @@ public class GlobalExceptionHandler : IExceptionHandler
         if (exception is DbUpdateConcurrencyException)
             return false;
 
-        _logger.LogError(
-            exception,
-            "Unhandled exception on {Method} {Path}",
-            httpContext.Request.Method,
-            httpContext.Request.Path);
+        var traceId  = httpContext.TraceIdentifier;
+        var method   = httpContext.Request.Method;
+        var path     = httpContext.Request.Path;
+        var query    = httpContext.Request.QueryString.HasValue
+                           ? httpContext.Request.QueryString.Value
+                           : string.Empty;
+        var exType   = exception.GetType().Name;
 
         var (status, title) = exception switch
         {
@@ -42,6 +39,21 @@ public class GlobalExceptionHandler : IExceptionHandler
             _                           => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 
+
+        if (status >= 500)
+        {
+            _logger.LogError(
+                exception,
+                "[{TraceId}] Unhandled {ExceptionType} on {Method} {Path}{Query} → {StatusCode}",
+                traceId, exType, method, path, query, status);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "[{TraceId}] Client error {ExceptionType} on {Method} {Path}{Query} → {StatusCode}: {Message}",
+                traceId, exType, method, path, query, status, exception.Message);
+        }
+
         var problem = new ProblemDetails
         {
             Status   = status,
@@ -49,6 +61,9 @@ public class GlobalExceptionHandler : IExceptionHandler
             Detail   = exception.Message,
             Instance = httpContext.Request.Path
         };
+
+
+        problem.Extensions["traceId"] = traceId;
 
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);

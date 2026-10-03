@@ -11,20 +11,20 @@ public static class UserEndPoints
     public static void MapUserEndPoints(this WebApplication app)
     {
 
-        app.MapPost("/users/register", async (RegistrationDto request, UserManager<ApplicationUser> userManager) =>
-        {
-            var user = new ApplicationUser
-            {
-                UserName  = request.Email,
-                Email     = request.Email,
-                FirstName = request.FirstName,
-                LastName  = request.LastName
-            };
-            var result = await userManager.CreateAsync(user, request.Password);
-            return result.Succeeded
-                ? Results.Ok("User created.")
-                : Results.BadRequest(result.Errors);
-        });
+        // app.MapPost("/users/register", async (RegistrationDto request, UserManager<ApplicationUser> userManager) =>
+        // {
+        //     var user = new ApplicationUser
+        //     {
+        //         UserName  = request.Email,
+        //         Email     = request.Email,
+        //         FirstName = request.FirstName,
+        //         LastName  = request.LastName
+        //     };
+        //     var result = await userManager.CreateAsync(user, request.Password);
+        //     return result.Succeeded
+        //         ? Results.Ok("User created.")
+        //         : Results.BadRequest(result.Errors);
+        // });
 
 
 

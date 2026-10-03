@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.EndPoints;
 using MyApp.Api.Exceptions;
+using MyApp.Api.Services;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddAppStoreDb();
 builder.AddIdentityContext();
+builder.Services.AddTransient<IEmailSender<ApplicationUser>, EmailSender>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 

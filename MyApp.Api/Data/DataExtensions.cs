@@ -59,8 +59,9 @@
         public static void AddIdentityContext(this WebApplicationBuilder builder){
         builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
         {
-            options.Password.RequiredLength=8;
-            options.User.RequireUniqueEmail=true;
+            options.Password.RequiredLength = 8;
+            options.User.RequireUniqueEmail  = true;
+            options.SignIn.RequireConfirmedEmail = true;
         }).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContex>();
         }
     }

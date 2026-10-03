@@ -14,6 +14,7 @@ public class AppDbContex(DbContextOptions<AppDbContex> options)
     public DbSet<Cart> Cart => Set<Cart>();
     public DbSet<CartItem> CartItem => Set<CartItem>();
     public DbSet<Tracking> Tracking => Set<Tracking>();
+    public DbSet<DeliveryOption> DeliveryOptions => Set<DeliveryOption>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

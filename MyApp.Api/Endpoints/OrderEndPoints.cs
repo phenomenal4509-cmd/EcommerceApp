@@ -10,31 +10,22 @@ public static class OrderEndPoints
 {
     public static void MapOrderEndPoints(this WebApplication app)
     {
-
         app.MapGet("/orders", async (HttpContext context, AppDbContex dbContext) =>
         {
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
             var orders = await dbContext.Orders
                 .Include(o => o.OrderItems).Include(o => o.TrackingHistory)
-                .Where(o => o.UserId == userId) 
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.Id)
                 .ToListAsync();
 
-            var details = orders.Select(order => new OrderDetailsDto(
-                order.Id,
-                order.TotalCost,
-                order.OrderDate,
-                order.CurrentStatus,
-                order.OrderItems.Select(item => new OrderItemDetailsDto(
-                    item.ProductId, item.Quantity, item.UnitPrice)).ToList(),
-                order.TrackingHistory.Select(t => new TrackingHistoryDto(
-                    t.Status, t.StatusChangedAt)).ToList()
-            )).ToList();
+            var details = new List<OrderDetailsDto>();
+            foreach (var order in orders)
+                details.Add(await MapOrderDetailsAsync(order, dbContext));
 
             return Results.Ok(details);
         }).RequireAuthorization();
-
-
 
         app.MapGet("/orders/{id}", async (int id, HttpContext context, AppDbContex dbContext) =>
         {
@@ -47,19 +38,8 @@ public static class OrderEndPoints
             if (order is null)
                 return Results.NotFound("No order with this Id exists.");
 
-            var itemDetails = order.OrderItems
-                .Select(item => new OrderItemDetailsDto(item.ProductId, item.Quantity, item.UnitPrice))
-                .ToList();
-
-            var trackingHistory = order.TrackingHistory
-                .Select(t => new TrackingHistoryDto(t.Status, t.StatusChangedAt))
-                .ToList();
-
-            return Results.Ok(new OrderDetailsDto(
-                order.Id, order.TotalCost, order.OrderDate,
-                order.CurrentStatus, itemDetails, trackingHistory));
+            return Results.Ok(await MapOrderDetailsAsync(order, dbContext));
         }).RequireAuthorization();
-
 
         app.MapPut("/orders/{id}", async (int id, AppDbContex dbContext, UpdateOrderDto updateOrder, HttpContext context) =>
         {
@@ -82,7 +62,7 @@ public static class OrderEndPoints
             try
             {
                 dbContext.OrderItems.RemoveRange(existingOrder.OrderItems);
-                decimal totalCost = 0;
+                decimal productSubtotal = 0;
 
                 foreach (var item in updateOrder.items)
                 {
@@ -103,25 +83,25 @@ public static class OrderEndPoints
                         return Results.BadRequest($"Quantity cannot exceed 49 for product {existingProduct.Id}.");
                     }
 
-                    totalCost += existingProduct.Price * item.Quantity;
+                    productSubtotal += existingProduct.Price * item.Quantity;
                     existingOrder.OrderItems.Add(new OrderItem
                     {
                         ProductId = existingProduct.Id,
                         Quantity = item.Quantity,
-                        UnitPrice = existingProduct.Price
+                        UnitPrice = existingProduct.Price,
+                        DeliveryOptionId = 1,
+                        EstimatedDeliveryAt = DateTimeOffset.UtcNow.AddDays(7)
                     });
                 }
 
-                existingOrder.TotalCost = totalCost;
+                existingOrder.ProductSubtotal = productSubtotal;
+                existingOrder.ShippingCost = 0;
+                existingOrder.TaxAmount = Math.Round(productSubtotal * 0.1m, 2, MidpointRounding.AwayFromZero);
+                existingOrder.TotalCost = existingOrder.ProductSubtotal + existingOrder.TaxAmount;
                 await dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return Results.Ok(new OrderDetailsDto(
-                    existingOrder.Id, existingOrder.TotalCost, existingOrder.OrderDate,
-                    existingOrder.CurrentStatus,
-                    existingOrder.OrderItems.Select(i => new OrderItemDetailsDto(i.ProductId, i.Quantity, i.UnitPrice)).ToList(),
-                    existingOrder.TrackingHistory.Select(t => new TrackingHistoryDto(t.Status, t.StatusChangedAt)).ToList()
-                ));
+                return Results.Ok(await MapOrderDetailsAsync(existingOrder, dbContext));
             }
             catch
             {
@@ -129,8 +109,6 @@ public static class OrderEndPoints
                 throw;
             }
         }).RequireAuthorization();
-
-
 
         app.MapDelete("/orders/{id}", async (int id, HttpContext context, AppDbContex dbContext) =>
         {
@@ -159,5 +137,33 @@ public static class OrderEndPoints
                 throw;
             }
         }).RequireAuthorization();
+    }
+
+    private static async Task<OrderDetailsDto> MapOrderDetailsAsync(Order order, AppDbContex dbContext)
+    {
+        var itemDetails = new List<OrderItemDetailsDto>();
+        foreach (var item in order.OrderItems)
+        {
+            var product = await dbContext.Products.FindAsync(item.ProductId);
+            itemDetails.Add(new OrderItemDetailsDto(
+                item.ProductId,
+                item.Quantity,
+                item.UnitPrice,
+                product?.Name ?? "Unknown product",
+                item.DeliveryOptionId,
+                item.EstimatedDeliveryAt));
+        }
+
+        var trackingHistory = order.TrackingHistory
+            .Select(t => new TrackingHistoryDto(t.Status, t.StatusChangedAt))
+            .ToList();
+
+        return new OrderDetailsDto(
+            order.Id,
+            order.TotalCost,
+            order.OrderDate,
+            order.CurrentStatus,
+            itemDetails,
+            trackingHistory);
     }
 }

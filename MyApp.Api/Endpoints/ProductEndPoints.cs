@@ -8,10 +8,20 @@ public static class ProductEndPoints
 {
     public static void MapProductEndpoints(this WebApplication app)
     {
-        app.MapGet("/products", async (AppDbContex dbContext) =>
+        app.MapGet("/products", async (string? search, AppDbContex dbContext) =>
         {
-            var result= await dbContext.Products.OrderBy(p => p.Id).ToListAsync();
-            var products= result.Select(p=>new ProductDto(p.Name,p.Price,p.Description,p.Version)).ToList();
+            var query = dbContext.Products.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(p =>
+                    p.Name.ToLower().Contains(term) ||
+                    p.Description.ToLower().Contains(term));
+            }
+
+            var result = await query.OrderBy(p => p.Id).ToListAsync();
+            var products = result.Select(p =>
+                new ProductDetailsDto(p.Id, p.Name, p.Price, p.Description, p.Version)).ToList();
             return Results.Ok(products);
         });
         app.MapGet("/products/{id}", async (int id ,AppDbContex dbContext) =>
@@ -22,7 +32,12 @@ public static class ProductEndPoints
             {
                 return Results.NotFound();
             }
-            ProductDto product= new(exisitingProduct.Name,exisitingProduct.Price,exisitingProduct.Description,exisitingProduct.Version);
+            ProductDetailsDto product = new(
+                exisitingProduct.Id,
+                exisitingProduct.Name,
+                exisitingProduct.Price,
+                exisitingProduct.Description,
+                exisitingProduct.Version);
             return Results.Ok(product);
         });
         app.MapPost("/products", async (CreateProductDto newProduct, AppDbContex dbContext) =>

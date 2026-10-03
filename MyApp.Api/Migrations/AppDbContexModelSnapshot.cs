@@ -252,6 +252,9 @@ namespace MyApp.Api.Migrations
                     b.Property<int>("CartId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("DeliveryOptionId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
@@ -263,6 +266,29 @@ namespace MyApp.Api.Migrations
                     b.HasIndex("CartId");
 
                     b.ToTable("CartItem");
+                });
+
+            modelBuilder.Entity("MyApp.Api.Models.DeliveryOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DeliveryDays")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryOptions");
                 });
 
             modelBuilder.Entity("MyApp.Api.Models.Order", b =>
@@ -279,6 +305,15 @@ namespace MyApp.Api.Migrations
 
                     b.Property<DateOnly>("OrderDate")
                         .HasColumnType("date");
+
+                    b.Property<decimal>("ProductSubtotal")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("ShippingCost")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("TotalCost")
                         .HasColumnType("numeric");
@@ -299,6 +334,12 @@ namespace MyApp.Api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DeliveryOptionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("EstimatedDeliveryAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");

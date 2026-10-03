@@ -4,6 +4,13 @@ namespace MyApp.Api.Data;
 
 public static class SeedData
 {
+    public static List<DeliveryOption> DeliveryOptions =>
+    [
+        new() { Id = 1, DeliveryDays = 7, Price = 0m, Name = "Standard" },
+        new() { Id = 2, DeliveryDays = 3, Price = 4.99m, Name = "Express" },
+        new() { Id = 3, DeliveryDays = 1, Price = 9.99m, Name = "Overnight" }
+    ];
+
     public static List<Product> Products =>
     [
         new()

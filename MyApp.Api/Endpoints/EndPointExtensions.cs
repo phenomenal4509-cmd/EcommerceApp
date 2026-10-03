@@ -13,5 +13,7 @@ public static class EndPointExtensions
         app.MapUserEndPoints();
         app.MapAdminEndPoints();
         app.MapCheckOutEndPoints();
+        app.MapDeliveryOptionEndPoints();
+        app.MapPaymentSummaryEndPoints();
     }
 }

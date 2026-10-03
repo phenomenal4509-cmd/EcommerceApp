@@ -19,7 +19,8 @@ public static class CartEndPoints
             if (product is null) return null;
 
             totalCost += product.Price * item.Quantity;
-            products.Add(new CartItemDetailsDto(product.Id, product.Name, product.Price, product.Description, item.Quantity));
+            products.Add(new CartItemDetailsDto(
+                product.Id, product.Name, product.Price, product.Description, item.Quantity, item.DeliveryOptionId));
         }
 
         return new CartDetailsDto(existingCart.Id, totalCost, products);
@@ -76,7 +77,16 @@ public static class CartEndPoints
                 if (product is null)
                     return Results.NotFound($"Product {item.ProductId} does not exist.");
 
-                newCart.CartItems.Add(new CartItem { ProductId = item.ProductId, Quantity = item.Quantity });
+                var deliveryOption = await dbContext.DeliveryOptions.FindAsync(item.DeliveryOptionId);
+                if (deliveryOption is null)
+                    return Results.BadRequest($"Delivery option {item.DeliveryOptionId} is invalid.");
+
+                newCart.CartItems.Add(new CartItem
+                {
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    DeliveryOptionId = item.DeliveryOptionId
+                });
             }
 
             dbContext.Cart.Add(newCart);
@@ -119,12 +129,23 @@ public static class CartEndPoints
                 var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId);
                 if (product is null)
                     return Results.NotFound($"Product {item.ProductId} does not exist.");
+
+                var deliveryOption = await dbContext.DeliveryOptions.FindAsync(item.DeliveryOptionId);
+                if (deliveryOption is null)
+                    return Results.BadRequest($"Delivery option {item.DeliveryOptionId} is invalid.");
             }
 
             dbContext.CartItem.RemoveRange(existingCart.CartItems);
 
             foreach (var item in update.items)
-                existingCart.CartItems.Add(new CartItem { ProductId = item.ProductId, Quantity = item.Quantity });
+            {
+                existingCart.CartItems.Add(new CartItem
+                {
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    DeliveryOptionId = item.DeliveryOptionId
+                });
+            }
 
             await dbContext.SaveChangesAsync();
 

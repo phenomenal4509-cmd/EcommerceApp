@@ -36,6 +36,13 @@
             }
             context.SaveChanges();
 
+            foreach (var option in SeedData.DeliveryOptions)
+            {
+                if (context.Set<DeliveryOption>().Find(option.Id) is null)
+                    context.Set<DeliveryOption>().Add(option);
+            }
+            context.SaveChanges();
+
             // Reset the sequence so new inserts don't collide with seeded Ids
             context.Database.ExecuteSqlRaw("SELECT setval('\"Products_Id_seq\"', (SELECT MAX(\"Id\") FROM \"Products\"))");
 
@@ -51,6 +58,13 @@
             }
             await context.SaveChangesAsync(cancellationToken);
 
+            foreach (var option in SeedData.DeliveryOptions)
+            {
+                if (await context.Set<DeliveryOption>().FindAsync([option.Id], cancellationToken) is null)
+                    context.Set<DeliveryOption>().Add(option);
+            }
+            await context.SaveChangesAsync(cancellationToken);
+
             // Reset the sequence so new inserts don't collide with seeded Ids
             await context.Database.ExecuteSqlRawAsync("SELECT setval('\"Products_Id_seq\"', (SELECT MAX(\"Id\") FROM \"Products\"))", cancellationToken);
         }));
@@ -61,7 +75,7 @@
         {
             options.Password.RequiredLength = 8;
             options.User.RequireUniqueEmail  = true;
-            options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedEmail = builder.Environment.IsDevelopment() is false;
         }).AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContex>();
         }
     }

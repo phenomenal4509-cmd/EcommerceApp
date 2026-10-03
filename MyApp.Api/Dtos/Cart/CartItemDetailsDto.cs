@@ -7,5 +7,6 @@ public record CartItemDetailsDto(
     [Range(1,100)][Required]string Name,
     [Range(0.01,double.MaxValue)][Required]decimal Price,
     [Required]string Description,
-    int Quantity
+    int Quantity,
+    int DeliveryOptionId
 );

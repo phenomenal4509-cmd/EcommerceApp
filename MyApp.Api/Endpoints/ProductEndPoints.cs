@@ -8,7 +8,7 @@ public static class ProductEndPoints
 {
     public static void MapProductEndpoints(this WebApplication app)
     {
-        app.MapGet("/products", async (string? search, AppDbContex dbContext) =>
+        app.MapGet("/products", async (string? search, int? page, int? pageSize, AppDbContex dbContext) =>
         {
             var query = dbContext.Products.AsQueryable();
             if (!string.IsNullOrWhiteSpace(search))
@@ -19,10 +19,25 @@ public static class ProductEndPoints
                     p.Description.ToLower().Contains(term));
             }
 
-            var result = await query.OrderBy(p => p.Id).ToListAsync();
-            var products = result.Select(p =>
+            var currentPage = page is > 0 ? page.Value : 1;
+            var size = pageSize is > 0 and <= 100 ? pageSize.Value : 10;
+
+            var totalItems = await query.CountAsync();
+            var result = await query
+                .OrderBy(p => p.Id)
+                .Skip((currentPage - 1) * size)
+                .Take(size)
+                .ToListAsync();
+
+            var items = result.Select(p =>
                 new ProductDetailsDto(p.Id, p.Name, p.Price, p.Description, p.Image, p.Version)).ToList();
-            return Results.Ok(products);
+
+            return Results.Ok(new PagedResult<ProductDetailsDto>(
+                items,
+                currentPage,
+                size,
+                totalItems,
+                (int)Math.Ceiling(totalItems / (double)size)));
         });
         app.MapGet("/products/{id}", async (int id ,AppDbContex dbContext) =>
         {

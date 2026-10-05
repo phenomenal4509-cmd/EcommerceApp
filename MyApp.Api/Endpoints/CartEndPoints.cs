@@ -20,7 +20,7 @@ public static class CartEndPoints
 
             totalCost += product.Price * item.Quantity;
             products.Add(new CartItemDetailsDto(
-                product.Id, product.Name, product.Price, product.Description, item.Quantity, item.DeliveryOptionId));
+                product.Id, product.Name, product.Price, product.Description, product.Image, item.Quantity, item.DeliveryOptionId));
         }
 
         return new CartDetailsDto(existingCart.Id, totalCost, products);

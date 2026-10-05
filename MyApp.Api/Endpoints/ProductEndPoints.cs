@@ -21,7 +21,7 @@ public static class ProductEndPoints
 
             var result = await query.OrderBy(p => p.Id).ToListAsync();
             var products = result.Select(p =>
-                new ProductDetailsDto(p.Id, p.Name, p.Price, p.Description, p.Version)).ToList();
+                new ProductDetailsDto(p.Id, p.Name, p.Price, p.Description, p.Image, p.Version)).ToList();
             return Results.Ok(products);
         });
         app.MapGet("/products/{id}", async (int id ,AppDbContex dbContext) =>
@@ -37,6 +37,7 @@ public static class ProductEndPoints
                 exisitingProduct.Name,
                 exisitingProduct.Price,
                 exisitingProduct.Description,
+                exisitingProduct.Image,
                 exisitingProduct.Version);
             return Results.Ok(product);
         });
@@ -47,10 +48,11 @@ public static class ProductEndPoints
                 Name=newProduct.Name,
                 Price=newProduct.Price,
                 Description=newProduct.Description,
+                Image=newProduct.Image,
             };  
             dbContext.Products.Add(product);
             await dbContext.SaveChangesAsync();
-            ProductDetailsDto productDetails = new(product.Id, product.Name, product.Price, product.Description,product.Version);
+            ProductDetailsDto productDetails = new(product.Id, product.Name, product.Price, product.Description, product.Image, product.Version);
             return Results.Created($"/products/{product.Id}", productDetails);
         }).RequireAuthorization((policy) =>
         {
@@ -68,6 +70,7 @@ public static class ProductEndPoints
             exisitingProduct.Name=product.Name;
             exisitingProduct.Price=product.Price;
             exisitingProduct.Description=product.Description;
+            exisitingProduct.Image=product.Image;
             exisitingProduct.Version=Guid.NewGuid();
             await dbContext.SaveChangesAsync();
             return Results.NoContent();}

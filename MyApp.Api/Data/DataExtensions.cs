@@ -33,6 +33,10 @@
                 {
                     context.Set<Product>().Add(seedProduct);
                 }
+                else if (string.IsNullOrEmpty(product.Image))
+                {
+                    product.Image = seedProduct.Image;
+                }
             }
             context.SaveChanges();
 
@@ -54,6 +58,10 @@
                if(product is null)
                 {
                      context.Set<Product>().Add(seedProduct);
+                }
+                else if (string.IsNullOrEmpty(product.Image))
+                {
+                    product.Image = seedProduct.Image;
                 }
             }
             await context.SaveChangesAsync(cancellationToken);

@@ -119,6 +119,7 @@ public static class CheckOutEndPoints
                 item.Quantity,
                 item.UnitPrice,
                 product?.Name ?? "Unknown product",
+                product?.Image ?? "",
                 item.DeliveryOptionId,
                 item.EstimatedDeliveryAt));
         }

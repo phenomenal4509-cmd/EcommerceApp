@@ -150,6 +150,7 @@ public static class OrderEndPoints
                 item.Quantity,
                 item.UnitPrice,
                 product?.Name ?? "Unknown product",
+                product?.Image ?? "",
                 item.DeliveryOptionId,
                 item.EstimatedDeliveryAt));
         }

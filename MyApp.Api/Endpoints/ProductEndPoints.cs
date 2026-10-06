@@ -8,23 +8,74 @@ public static class ProductEndPoints
 {
     public static void MapProductEndpoints(this WebApplication app)
     {
-        app.MapGet("/products", async (string? search, int? page, int? pageSize, AppDbContex dbContext) =>
+        app.MapGet("/products", async (
+            string? search,
+            string? name,
+            decimal? minPrice,
+            decimal? maxPrice,
+            string? sortBy,
+            string? sortDirection,
+            int? page,
+            int? pageSize,
+            AppDbContex dbContext) =>
         {
-            var query = dbContext.Products.AsQueryable();
+            if (minPrice is < 0 || maxPrice is < 0)
+                return Results.BadRequest("minPrice and maxPrice cannot be negative.");
+
+            if (minPrice is not null && maxPrice is not null && minPrice.Value > maxPrice.Value)
+                return Results.BadRequest("minPrice cannot be greater than maxPrice.");
+
+            var products = dbContext.Products.AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var term = search.Trim().ToLower();
-                query = query.Where(p =>
+                products = products.Where(p =>
                     p.Name.ToLower().Contains(term) ||
                     p.Description.ToLower().Contains(term));
             }
 
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var nameTerm = name.Trim().ToLower();
+                products = products.Where(p => p.Name.ToLower().Contains(nameTerm));
+            }
+
+            if (minPrice is not null)
+            {
+                var lowerBound = minPrice.Value;
+                products = products.Where(p => p.Price >= lowerBound);
+            }
+
+            if (maxPrice is not null)
+            {
+                var upperBound = maxPrice.Value;
+                products = products.Where(p => p.Price <= upperBound);
+            }
+
+            var direction = sortDirection?.Trim();
+            var descending = string.Equals(direction, "desc", StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(direction, "descending", StringComparison.OrdinalIgnoreCase);
+
+            var sort = sortBy?.Trim().ToLowerInvariant();
+            products = sort switch
+            {
+                "name" => descending
+                    ? products.OrderByDescending(p => p.Name).ThenBy(p => p.Id)
+                    : products.OrderBy(p => p.Name).ThenBy(p => p.Id),
+                "price" => descending
+                    ? products.OrderByDescending(p => p.Price).ThenBy(p => p.Id)
+                    : products.OrderBy(p => p.Price).ThenBy(p => p.Id),
+                _ => descending
+                    ? products.OrderByDescending(p => p.Id)
+                    : products.OrderBy(p => p.Id)
+            };
+
             var currentPage = page is > 0 ? page.Value : 1;
             var size = pageSize is > 0 and <= 100 ? pageSize.Value : 10;
 
-            var totalItems = await query.CountAsync();
-            var result = await query
-                .OrderBy(p => p.Id)
+            var totalItems = await products.CountAsync();
+            var result = await products
                 .Skip((currentPage - 1) * size)
                 .Take(size)
                 .ToListAsync();

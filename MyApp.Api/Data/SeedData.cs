@@ -332,6 +332,166 @@ public static class SeedData
             Price = 38.00m,
             Description = "Sweaters, hoodies, apparel, mens",
             Image = "images/products/men-cozy-fleece-hoodie-light-teal.jpg"
+        },
+        new()
+        {
+            Id = 41,
+            Name = "Artistic Bowl Set - 6 Pieces",
+            Price = 26.99m,
+            Description = "Bowls, kitchen, dining",
+            Image = "images/products/artistic-bowl-set-6-piece.jpg"
+        },
+        new()
+        {
+            Id = 42,
+            Name = "Kitchen Paper Towels - 8 Rolls",
+            Price = 12.49m,
+            Description = "Paper towels, kitchen, cleaning",
+            Image = "images/products/kitchen-paper-towels-8-pack.jpg"
+        },
+        new()
+        {
+            Id = 43,
+            Name = "Lash Princess Volumizing Mascara",
+            Price = 9.99m,
+            Description = "Beauty, makeup, mascara, womens",
+            Image = "images/products/essence-mascara-lash-princess.png"
+        },
+        new()
+        {
+            Id = 44,
+            Name = "Eyeshadow Palette with Mirror",
+            Price = 19.99m,
+            Description = "Beauty, makeup, eyeshadow, womens",
+            Image = "images/products/eyeshadow-palette-with-mirror.png"
+        },
+        new()
+        {
+            Id = 45,
+            Name = "Red Matte Lipstick",
+            Price = 12.99m,
+            Description = "Beauty, makeup, lipstick, womens",
+            Image = "images/products/red-lipstick.png"
+        },
+        new()
+        {
+            Id = 46,
+            Name = "Wood Base Table Lamp",
+            Price = 49.99m,
+            Description = "Lamps, lighting, home decor, bedroom",
+            Image = "images/products/table-lamp-wood-base.png"
+        },
+        new()
+        {
+            Id = 47,
+            Name = "Family Tree Photo Frame",
+            Price = 29.99m,
+            Description = "Frames, home decor, living room",
+            Image = "images/products/family-tree-photo-frame.png"
+        },
+        new()
+        {
+            Id = 48,
+            Name = "Artificial Showpiece Plant in Pot",
+            Price = 39.99m,
+            Description = "Plants, home decor, living room",
+            Image = "images/products/house-showpiece-plant.png"
+        },
+        new()
+        {
+            Id = 49,
+            Name = "Carbon Steel Wok with Wooden Handle",
+            Price = 29.99m,
+            Description = "Woks, kitchen, cookware",
+            Image = "images/products/carbon-steel-wok.png"
+        },
+        new()
+        {
+            Id = 50,
+            Name = "Wooden Chopping Board",
+            Price = 12.99m,
+            Description = "Cutting boards, kitchen, cutlery",
+            Image = "images/products/wooden-chopping-board.png"
+        },
+        new()
+        {
+            Id = 51,
+            Name = "Countertop Microwave Oven - 25L",
+            Price = 89.99m,
+            Description = "Microwave, kitchen, appliances",
+            Image = "images/products/countertop-microwave-oven.png"
+        },
+        new()
+        {
+            Id = 52,
+            Name = "12-Jar Wall Mount Spice Rack",
+            Price = 19.99m,
+            Description = "Spices, kitchen, organizers",
+            Image = "images/products/spice-rack-12-jar.png"
+        },
+        new()
+        {
+            Id = 53,
+            Name = "Blue and Black Check Shirt",
+            Price = 29.99m,
+            Description = "Shirts, apparel, mens",
+            Image = "images/products/blue-black-check-shirt.png"
+        },
+        new()
+        {
+            Id = 54,
+            Name = "Men's Plaid Flannel Shirt",
+            Price = 34.99m,
+            Description = "Shirts, apparel, mens",
+            Image = "images/products/mens-plaid-flannel-shirt.png"
+        },
+        new()
+        {
+            Id = 55,
+            Name = "Nike Air Jordan Retro Sneakers - Red/Black",
+            Price = 149.99m,
+            Description = "Shoes, sneakers, footwear, mens",
+            Image = "images/products/nike-air-jordan-sneakers.png"
+        },
+        new()
+        {
+            Id = 56,
+            Name = "Puma Future Rider Trainers",
+            Price = 89.99m,
+            Description = "Shoes, sneakers, footwear",
+            Image = "images/products/puma-future-rider-trainers.png"
+        },
+        new()
+        {
+            Id = 57,
+            Name = "Brown Leather Belt Watch",
+            Price = 89.99m,
+            Description = "Watches, accessories, mens",
+            Image = "images/products/brown-leather-belt-watch.png"
+        },
+        new()
+        {
+            Id = 58,
+            Name = "Amazon Echo Plus Smart Speaker",
+            Price = 99.99m,
+            Description = "Electronics, speakers, smart home",
+            Image = "images/products/amazon-echo-plus-speaker.png"
+        },
+        new()
+        {
+            Id = 59,
+            Name = "Apple AirPods Wireless Earbuds",
+            Price = 129.99m,
+            Description = "Electronics, headphones, accessories",
+            Image = "images/products/apple-airpods-wireless-earbuds.png"
+        },
+        new()
+        {
+            Id = 60,
+            Name = "Stainless Steel Pot with Glass Lid",
+            Price = 39.99m,
+            Description = "Pots, kitchen, cookware",
+            Image = "images/products/stainless-steel-pot-glass-lid.png"
         }
     ];
 }

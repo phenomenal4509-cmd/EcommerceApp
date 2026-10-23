@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyApp.Api.Data;
 using MyApp.Api.Dto;
 using MyApp.Api.Models;
+using Npgsql;
 
 namespace MyApp.Api.EndPoints;
 
@@ -90,7 +91,14 @@ public static class CartEndPoints
             }
 
             dbContext.Cart.Add(newCart);
-            await dbContext.SaveChangesAsync();
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            {
+                return Results.Conflict("You already have a cart. Use PUT /cart to update it.");
+            }
 
             var cartDetails = await GetDetails(newCart, dbContext);
             if (cartDetails is null)

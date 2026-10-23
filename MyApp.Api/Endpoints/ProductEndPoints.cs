@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace MyApp.Api.EndPoints;
 public static class ProductEndPoints
 {
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+
     public static void MapProductEndpoints(this WebApplication app)
     {
         app.MapGet("/products", async (
@@ -29,16 +32,16 @@ public static class ProductEndPoints
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var term = search.Trim().ToLower();
+                var pattern = $"%{EscapeLike(search.Trim())}%";
                 products = products.Where(p =>
-                    p.Name.ToLower().Contains(term) ||
-                    p.Description.ToLower().Contains(term));
+                    EF.Functions.ILike(p.Name, pattern, @"\") ||
+                    EF.Functions.ILike(p.Description, pattern, @"\"));
             }
 
             if (!string.IsNullOrWhiteSpace(name))
             {
-                var nameTerm = name.Trim().ToLower();
-                products = products.Where(p => p.Name.ToLower().Contains(nameTerm));
+                var pattern = $"%{EscapeLike(name.Trim())}%";
+                products = products.Where(p => EF.Functions.ILike(p.Name, pattern, @"\"));
             }
 
             if (minPrice is not null)

@@ -20,6 +20,7 @@ namespace MyApp.Api.Migrations
                 .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -238,6 +239,10 @@ namespace MyApp.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserID")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Cart_UserID");
+
                     b.ToTable("Cart");
                 });
 
@@ -264,6 +269,12 @@ namespace MyApp.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CartId");
+
+                    b.HasIndex("DeliveryOptionId")
+                        .HasDatabaseName("IX_CartItem_DeliveryOptionId");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("IX_CartItem_ProductId");
 
                     b.ToTable("CartItem");
                 });
@@ -324,6 +335,15 @@ namespace MyApp.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CurrentStatus")
+                        .HasDatabaseName("IX_Orders_CurrentStatus");
+
+                    b.HasIndex("OrderDate")
+                        .HasDatabaseName("IX_Orders_OrderDate");
+
+                    b.HasIndex("UserId", "Id")
+                        .HasDatabaseName("IX_Orders_UserId_Id");
+
                     b.ToTable("Orders");
                 });
 
@@ -355,7 +375,13 @@ namespace MyApp.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DeliveryOptionId")
+                        .HasDatabaseName("IX_OrderItems_DeliveryOptionId");
+
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("IX_OrderItems_ProductId");
 
                     b.ToTable("OrderItems");
                 });
@@ -389,6 +415,24 @@ namespace MyApp.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Description")
+                        .HasDatabaseName("IX_Products_Description_Trim");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Description"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Description"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Products_Name_Trim");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("Name", "Id")
+                        .HasDatabaseName("IX_Products_Name_Id");
+
+                    b.HasIndex("Price", "Id")
+                        .HasDatabaseName("IX_Products_Price_Id");
+
                     b.ToTable("Products");
                 });
 
@@ -413,6 +457,9 @@ namespace MyApp.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("StatusChangedAt")
+                        .HasDatabaseName("IX_Tracking_StatusChangedAt");
 
                     b.ToTable("Tracking");
                 });
@@ -468,6 +515,15 @@ namespace MyApp.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MyApp.Api.Models.Cart", b =>
+                {
+                    b.HasOne("MyApp.Api.Data.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MyApp.Api.Models.CartItem", b =>
                 {
                     b.HasOne("MyApp.Api.Models.Cart", null)
@@ -475,10 +531,37 @@ namespace MyApp.Api.Migrations
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MyApp.Api.Models.DeliveryOption", null)
+                        .WithMany()
+                        .HasForeignKey("DeliveryOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyApp.Api.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MyApp.Api.Models.Order", b =>
+                {
+                    b.HasOne("MyApp.Api.Data.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MyApp.Api.Models.OrderItem", b =>
                 {
+                    b.HasOne("MyApp.Api.Models.DeliveryOption", null)
+                        .WithMany()
+                        .HasForeignKey("DeliveryOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("MyApp.Api.Models.Order", null)
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")

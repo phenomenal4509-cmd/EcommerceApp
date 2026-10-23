@@ -1,0 +1,74 @@
+## ── ASP.NET Core / .NET ──────────────────────────────────────────────────────
+
+# Build output
+bin/
+obj/
+
+# User Secrets (NEVER commit – store DB passwords, API keys, SMTP creds here)
+# Location: %APPDATA%\Microsoft\UserSecrets\<project-guid>\secrets.json
+# Add secrets with: dotnet user-secrets set "Key" "Value"
+**/secrets.json
+
+# Local appsettings overrides (create this file locally to override appsettings.json)
+appsettings.Local.json
+appsettings.*.Local.json
+
+# Entity Framework migrations (optional – uncomment if auto-generated)
+# **/Migrations/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.DotSettings.user
+
+# Publish output
+publish/
+**/publish/
+
+# Test results
+TestResults/
+coverage/
+
+## ── React / Node ─────────────────────────────────────────────────────────────
+
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## ── OS files ─────────────────────────────────────────────────────────────────
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## ── VS Code ──────────────────────────────────────────────────────────────────
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+## ── Sensitive files – hard block ─────────────────────────────────────────────
+
+# Never commit real credentials / keys
+*.pem
+*.key
+*.pfx
+*.p12
+secrets.json

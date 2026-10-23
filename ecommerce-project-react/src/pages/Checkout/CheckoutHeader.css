@@ -1,0 +1,124 @@
+.checkout-header {
+  height: 60px;
+  padding-left: 30px;
+  padding-right: 30px;
+  background-color: #111111;
+  color: white;
+
+  display: flex;
+  justify-content: center;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #222222;
+}
+
+.checkout-header .header-content {
+  width: 100%;
+  max-width: 1100px;
+
+  display: flex;
+  align-items: center;
+}
+
+.checkout-header .checkout-header-left-section {
+  width: 200px;
+}
+
+.checkout-header .checkout-logo-link {
+  text-decoration: none;
+}
+
+.checkout-header .checkout-logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+}
+
+.checkout-header .checkout-mobile-logo-text {
+  display: none;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.checkout-header .logo-accent {
+  color: #f59e0b;
+}
+
+@media (max-width: 575px) {
+  .checkout-header .checkout-header-left-section {
+    width: auto;
+  }
+
+  .checkout-header .checkout-logo-text {
+    display: none;
+  }
+
+  .checkout-header .checkout-mobile-logo-text {
+    display: inline-block;
+  }
+}
+
+.checkout-header .checkout-header-middle-section {
+  flex: 1;
+  flex-shrink: 0;
+  text-align: center;
+  color: white;
+
+  font-size: 22px;
+  font-weight: 500;
+
+  display: flex;
+  justify-content: center;
+}
+
+.checkout-header .return-to-home-link {
+  color: #f59e0b;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.checkout-header .return-to-home-link:hover {
+  color: #fbbf24;
+}
+
+@media (max-width: 1000px) {
+  .checkout-header .checkout-header-middle-section {
+    font-size: 20px;
+    margin-right: 60px;
+  }
+
+  .checkout-header .return-to-home-link {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 575px) {
+  .checkout-header .checkout-header-middle-section {
+    margin-right: 5px;
+  }
+}
+
+.checkout-header .checkout-header-right-section {
+  text-align: right;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.checkout-header .checkout-header-right-section img {
+  height: 32px;
+}
+
+@media (max-width: 1000px) {
+  .checkout-header .checkout-header-right-section {
+    width: auto;
+  }
+}

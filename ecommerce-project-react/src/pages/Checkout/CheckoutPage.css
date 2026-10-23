@@ -1,0 +1,241 @@
+.checkout-page {
+  max-width: 1100px;
+  padding-left: 30px;
+  padding-right: 30px;
+
+  margin-top: 140px;
+  margin-bottom: 100px;
+
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.checkout-page .page-title {
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: #ffffff;
+}
+
+.checkout-page .checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  column-gap: 12px;
+
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .checkout-page .main {
+    max-width: 500px;
+  }
+
+  .checkout-page .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkout-page .cart-item-container,
+.checkout-page .payment-summary {
+  border: 1px solid #222222;
+  border-radius: 6px;
+  padding: 18px;
+  background-color: #141414;
+}
+
+.checkout-page .cart-item-container {
+  margin-bottom: 12px;
+}
+
+.checkout-page .payment-summary {
+  padding-bottom: 5px;
+}
+
+@media (max-width: 1000px) {
+  .checkout-page .payment-summary {
+    grid-row: 1;
+    margin-bottom: 12px;
+  }
+}
+
+.checkout-page .delivery-date {
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 19px;
+  margin-top: 5px;
+  margin-bottom: 22px;
+}
+
+.checkout-page .cart-item-details-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr;
+  column-gap: 25px;
+}
+
+@media (max-width: 1000px) {
+  .checkout-page .cart-item-details-grid {
+    grid-template-columns: 100px 1fr;
+    row-gap: 30px;
+  }
+}
+
+.checkout-page .product-image {
+  max-width: 100%;
+  max-height: 120px;
+
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.checkout-page .product-name {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #e4e4e7;
+}
+
+.checkout-page .product-price {
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #ffffff;
+}
+
+.checkout-page .product-quantity {
+  color: #a1a1aa;
+}
+
+.checkout-page .product-quantity .link-primary {
+  margin-left: 3px;
+}
+
+@media (max-width: 1000px) {
+  .checkout-page .delivery-options {
+    grid-column: 1 / span 2;
+  }
+}
+
+.checkout-page .delivery-options-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #e4e4e7;
+}
+
+.checkout-page .delivery-option {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.checkout-page .delivery-option-input {
+  margin: 3px 5px 0px 0px;
+  cursor: pointer;
+  accent-color: #f59e0b;
+}
+
+.checkout-page .delivery-option-date {
+  font-weight: 500;
+  margin-bottom: 3px;
+  color: #e4e4e7;
+}
+
+.checkout-page .delivery-option-price {
+  color: #71717a;
+  font-size: 15px;
+}
+
+.checkout-page .payment-summary-title {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.checkout-page .payment-summary-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+
+  font-size: 15px;
+  margin-bottom: 9px;
+  color: #a1a1aa;
+}
+
+.checkout-page .payment-summary-money {
+  text-align: right;
+}
+
+.checkout-page .subtotal-row .payment-summary-money {
+  border-top: 1px solid #222222;
+}
+
+.checkout-page .subtotal-row div {
+  padding-top: 9px;
+}
+
+.checkout-page .total-row {
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 18px;
+
+  border-top: 1px solid #222222;
+  padding-top: 18px;
+}
+
+.checkout-page .place-order-button {
+  width: 100%;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-radius: 5px;
+
+  margin-top: 20px;
+  margin-bottom: 19px;
+}
+.input-qunatity-button{
+  width:50px;
+  opacity: 0;
+  background-color: #1c1c1e;
+  color: #e4e4e7;
+  border: 1px solid #333333;
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin-left: 6px;
+}
+
+/* ─── Product placeholder in cart (no images in backend) ─────────── */
+.checkout-page .cart-product-placeholder {
+  width: 90px;
+  height: 90px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #1c1c1e, #2a2a2e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f59e0b;
+  border: 1px solid #333333;
+  text-transform: uppercase;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── Loading / empty / error states ─────────────────────────────── */
+.checkout-page .order-summary--loading,
+.checkout-page .cart-empty-msg,
+.checkout-page .payment-summary-loading,
+.checkout-page .payment-summary-empty {
+  color: #71717a;
+  font-size: 14px;
+  padding: 12px 0;
+}
+
+.checkout-page .checkout-error {
+  color: #f87171;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.checkout-page .payment-summary-error {
+  color: #f87171;
+  font-size: 13px;
+  margin-top: 8px;
+}

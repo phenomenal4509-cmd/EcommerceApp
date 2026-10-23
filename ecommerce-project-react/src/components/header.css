@@ -1,0 +1,210 @@
+.header {
+  background-color: #111111;
+  color: white;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 1000;
+  border-bottom: 1px solid #222222;
+}
+
+.header .left-section {
+  width: 208px;
+}
+
+@media (max-width: 800px) {
+  .header .left-section {
+    width: unset;
+  }
+}
+
+.header .header-link {
+  display: inline-block;
+  padding: 6px 9.5px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid rgba(0, 0, 0, 0);
+  transition: border-color 0.2s ease;
+}
+
+.header .header-link:hover {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header .logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+}
+
+.header .logo-text .logo-accent {
+  color: #f59e0b;
+}
+
+.header .mobile-logo-text {
+  display: none;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.header .mobile-logo-text .logo-accent {
+  color: #f59e0b;
+}
+
+@media (max-width: 675px) {
+  .header .logo-text {
+    display: none;
+  }
+
+  .header .mobile-logo-text {
+    display: block;
+  }
+}
+
+.header .middle-section {
+  flex: 1;
+  max-width: 850px;
+  margin-left: 10px;
+  margin-right: 10px;
+  display: flex;
+}
+
+.header .search-bar {
+  flex: 1;
+  width: 0;
+  font-size: 16px;
+  height: 38px;
+  padding-left: 15px;
+  border: none;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background-color: #1c1c1e;
+  color: #e4e4e7;
+}
+
+.header .search-bar::placeholder {
+  color: #71717a;
+}
+
+.header .search-button {
+  background-color: #f59e0b;
+  border: none;
+  width: 45px;
+  height: 40px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.header .search-button:hover {
+  background-color: #d97706;
+}
+
+.header .search-icon {
+  height: 20px;
+  margin-left: 0px;
+  margin-top: 3px;
+}
+
+.header .right-section {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: end;
+}
+
+.header .orders-link {
+  color: white;
+
+  display: flex;
+  align-items: center;
+  padding-left: 13px;
+  padding-right: 13px;
+}
+
+.header .orders-text {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.header .cart-link {
+  color: white;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.header .cart-icon {
+  width: 38px;
+}
+
+.header .cart-text {
+  margin-left: 5px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.header .cart-quantity {
+  color: #f59e0b;
+  font-size: 14px;
+  font-weight: 700;
+
+  position: absolute;
+  top: 8.5px;
+  right: 46px;
+
+  width: 26px;
+  text-align: center;
+}
+.orders-link.active{
+  text-decoration: underline;
+}
+
+/* ─── Auth button / link in header ─────────────────────────────────── */
+.header .header-auth-btn {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #e4e4e7;
+  background: transparent;
+  border: 1px solid #333333;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  margin-right: 4px;
+}
+
+.header .header-auth-btn:hover {
+  border-color: #555555;
+  background-color: #1c1c1e;
+}
+
+.header .right-section {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
